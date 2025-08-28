@@ -78,11 +78,11 @@ hr.sep{border:none;border-top:1px dashed var(--border);margin:14px 0}
   border-radius:12px;padding:12px 16px;z-index:120;display:none
 }
 
-/* --- Select / Option legibility fix --- */
+/* Select legibility when opened */
 select:focus, select:active{ background:#fff; color:#111; }
 option{ color:#111; background:#fff; }
 
-/* Utility */
+/* Utils */
 .hidden{display:none !important}
 .faded{opacity:.6}
 </style>
@@ -244,7 +244,7 @@ option{ color:#111; background:#fff; }
       <button class="btn" onclick="App.auth.openRegister()">Create account</button>
     </div>
     <hr class="sep" />
-    <!-- Register is ALWAYS pending + Shopper -->
+    <!-- Register = always Shopper/Pending -->
     <div id="registerBox" class="hidden">
       <div class="row">
         <div><label>Full name</label><input id="regName" class="input" placeholder="Your name" /></div>
@@ -471,7 +471,7 @@ const App = {
     },
     showAuth(open=true){
       document.getElementById('authModal').style.display = open?'flex':'none';
-      document.getElementById('seedInfo').textContent = "Use your username or email to login, or submit for new account";
+      document.getElementById('seedInfo').textContent = "Seed admin: admin@example.com / admin";
     },
     hideAuth(){ App.ui.showAuth(false); },
     openModal(id){ document.getElementById(id).style.display='flex'; },
@@ -542,7 +542,6 @@ const App = {
       if(!name || !email) return U.toast('Name and email required');
       if(db.users.some(u=>u.email===email && u.id!==me.id)) return U.toast('Email already in use');
 
-      // password change (optional)
       if(n1 || n2){
         if(!cur) return U.toast('Enter current password to change it');
         const curHash = await U.sha256(cur);
@@ -552,11 +551,10 @@ const App = {
       }
       me.name=name; me.email=email;
 
-      // persist
       const idx = db.users.findIndex(u=>u.id===me.id);
       if(idx>-1){ db.users[idx]=me; saveDB({users:db.users}); }
       App.state.me = me;
-      App.admin.loadAll(); // refresh tables if admin
+      App.admin.loadAll();
       App.ui.closeModal('profileModal');
       U.toast('Profile saved');
       App.ui.updateAuthTabs();
@@ -722,6 +720,7 @@ const App = {
   admin:{
     loadAll(){
       const db=DB();
+      // Forms
       const tf=document.querySelector('#tblForms tbody'); tf.innerHTML='';
       db.forms.forEach(f=>{
         const tr=document.createElement('tr');
@@ -732,6 +731,7 @@ const App = {
           </td>`;
         tf.appendChild(tr);
       });
+      // Users
       const ts=document.querySelector('#tblShoppers tbody'); ts.innerHTML='';
       db.users.forEach(u=>{
         const tr=document.createElement('tr');
@@ -745,6 +745,7 @@ const App = {
           </td>`;
         ts.appendChild(tr);
       });
+      // Stores
       const tstore=document.querySelector('#tblStores tbody'); tstore.innerHTML='';
       db.stores.forEach(s=>{
         const tr=document.createElement('tr');
@@ -753,6 +754,7 @@ const App = {
               <button class="btn danger small" onclick="App.admin.deleteStore('${s.id}')">Delete</button></td>`;
         tstore.appendChild(tr);
       });
+      // Assignments
       const ta=document.querySelector('#tblAssign tbody'); ta.innerHTML='';
       db.assignments.forEach(a=>{
         const sh=db.users.find(u=>u.id===a.shopperId);
@@ -770,6 +772,7 @@ const App = {
         </td>`;
         ta.appendChild(tr);
       });
+      // Submissions
       const tsu=document.querySelector('#tblSubm tbody'); tsu.innerHTML='';
       db.submissions.forEach(s=>{
         const st=db.stores.find(o=>o.id===s.storeId)||{};
@@ -965,26 +968,161 @@ const App = {
       this.loadAll(); U.toast('Assignment deleted');
     },
 
-    /* Submissions */
+    /* Submissions - NEW light doc view */
     viewSubmission(id){
-      const db=DB(); const s=db.submissions.find(x=>x.id===id); if(!s) return;
-      const st=db.stores.find(o=>o.id===s.storeId)||{}, f=db.forms.find(o=>o.id===s.formId)||{fields:[]}, sh=db.users.find(o=>o.id===s.shopperId)||{};
-      const w=window.open('', '_blank');
-      const rows = Object.entries(s.values||{}).map(([k,v])=>{
-        const fld = f.fields.find(x=>x.id===k);
-        return `<tr><td style="padding:6px;border-bottom:1px solid #ddd">${fld?fld.label:k}</td><td style="padding:6px;border-bottom:1px solid #ddd">${(v??'')}</td></tr>`;
-      }).join('');
-      w.document.write(`
-        <html><head><title>Submission</title></head><body>
-        <h3>Submission ${id}</h3>
-        <p><b>Store:</b> ${st.name||''} | <b>Shopper:</b> ${sh.name||''}</p>
-        <p><b>Started:</b> ${U.fmtDT(s.startedAt)} | <b>Stopped:</b> ${U.fmtDT(s.stoppedAt)} | <b>Duration:</b> ${U.fmtDuration(s.durationSec||0)}</p>
-        <p><b>Geo:</b> ${s.geoStart||''} → ${s.geoStop||''}</p>
-        <table cellspacing="0" cellpadding="0" style="border-collapse:collapse">${rows}</table>
-        </body></html>
+      const db = DB();
+      const s  = db.submissions.find(x=>x.id===id); if(!s) return U.toast('Submission missing');
+      const st = db.stores.find(o=>o.id===s.storeId) || {};
+      const f  = db.forms.find(o=>o.id===s.formId) || {fields:[], title:'Form'};
+      const sh = db.users.find(o=>o.id===s.shopperId) || {};
+      const esc = (v)=> (v==null?'':String(v).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])));
+      const nl2br = (v)=> esc(v).replace(/\n/g,'<br>');
+
+      const badge = (status)=>{
+        const map = {
+          approved:{bg:'#e6ffed',bd:'#b6f2c4',fg:'#0f5132',txt:'Approved'},
+          rejected:{bg:'#ffe6ea',bd:'#f5b5bf',fg:'#842029',txt:'Rejected'},
+          submitted:{bg:'#e7f1ff',bd:'#bfd4ff',fg:'#0b3d91',txt:'Submitted'},
+          draft:{bg:'#f7f7f7',bd:'#e0e0e0',fg:'#444',txt:'Draft'}
+        };
+        const x = map[status] || map.submitted;
+        return `<span style="display:inline-block;padding:4px 10px;border-radius:999px;background:${x.bg};border:1px solid ${x.bd};color:${x.fg};font-size:12px">${x.txt}</span>`;
+      };
+
+      const star = (n)=>{
+        const v = Math.max(1, Math.min(5, parseInt(n||0,10) || 0));
+        const full = '★'.repeat(v), empty = '☆'.repeat(5-v);
+        return `<span style="font-size:16px;letter-spacing:1px">${full}${empty}</span><span style="margin-left:6px;font-size:12px;color:#666">${v}/5</span>`;
+      };
+
+      const valueFor = (fld, val)=>{
+        if(val==null || val==='') return '<span style="color:#999">–</span>';
+        switch(fld.type){
+          case 'textarea': return nl2br(val);
+          case 'rating':   return star(val);
+          default:         return esc(val);
+        }
+      };
+
+      const rows = (f.fields||[]).map((fld)=>{
+        const v = (s.values||{})[fld.id];
+        return `
+          <tr>
+            <th>${esc(fld.label || '(field)')}</th>
+            <td>${valueFor(fld, v)}</td>
+          </tr>`;
+      }).join('') || `<tr><td colspan="2" style="color:#777;padding:12px 0">No fields in this form.</td></tr>`;
+
+      const doc = window.open('', '_blank');
+      doc.document.write(`
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Submission ${esc(s.id)}</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --ink:#111; --muted:#6b7280; --paper:#FAFAFC; --line:#e5e7eb; --card:#fff; }
+  *{ box-sizing:border-box }
+  html,body{ margin:0; background:var(--paper); color:var(--ink); font-family:"DM Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+  .container{ max-width:900px; margin:0 auto; padding:28px 20px 60px; }
+  .doc{ background:var(--card); border:1px solid var(--line); border-radius:14px; box-shadow:0 1px 0 #eee; }
+  .head{ padding:22px 22px 10px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;}
+  .brand{ display:flex; align-items:center; gap:10px; }
+  .logo{ width:34px; height:34px; border-radius:10px; background:#111; color:#fff; display:grid; place-items:center; font-weight:700; }
+  h1{ font-size:18px; margin:0; }
+  .chips{ display:flex; gap:8px; flex-wrap:wrap }
+  .chip{ padding:3px 8px; border:1px solid var(--line); border-radius:999px; font-size:12px; color:#374151; background:#fff; }
+  .muted{ color:#6b7280; }
+  .meta{ padding:14px 22px 8px; display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .meta .item{ color:#6b7280; font-size:13px; }
+  .meta b{ color:#111; }
+  @media (max-width:800px){ .meta{ grid-template-columns:1fr } }
+  .toolbar{ padding:10px 22px; display:flex; gap:8px; border-bottom:1px solid var(--line); flex-wrap:wrap}
+  .btn{ appearance:none; border:1px solid var(--line); background:#fff; padding:8px 12px; border-radius:10px; cursor:pointer; font-size:13px; }
+  .btn.primary{ background:#111; color:#fff; border-color:#111; }
+  .content{ padding:16px 22px 26px; }
+  table{ width:100%; border-collapse:collapse; }
+  th,td{ text-align:left; vertical-align:top; padding:10px 8px; border-bottom:1px solid var(--line); }
+  th{ width:28%; color:#374151; font-weight:600; }
+  td{ width:72%; }
+  .foot{ padding:14px 22px; border-top:1px solid var(--line); color:#6b7280; font-size:12px; }
+  @media print{ .toolbar{ display:none } body{ background:#fff } .doc{ box-shadow:none } }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="doc">
+      <div class="head">
+        <div class="brand">
+          <div class="logo">MS</div>
+          <div>
+            <h1>Submission <span class="muted">#${esc(s.id)}</span></h1>
+            <div class="chips">
+              <span class="chip"><b>Form:</b> ${esc(f.title||'')}</span>
+              <span class="chip"><b>Store:</b> ${esc(st.name||'')}</span>
+              <span class="chip"><b>Shopper:</b> ${esc(sh.name||'')}</span>
+              ${badge(s.status||'submitted')}
+            </div>
+          </div>
+        </div>
+        <div class="muted" style="text-align:right">
+          Generated: ${esc(new Date().toLocaleString())}
+        </div>
+      </div>
+
+      <div class="meta">
+        <div class="item"><b>Started:</b> ${esc(U.fmtDT(s.startedAt))}</div>
+        <div class="item"><b>Stopped:</b> ${esc(U.fmtDT(s.stoppedAt))}</div>
+        <div class="item"><b>Duration:</b> ${esc(U.fmtDuration(s.durationSec||0))}</div>
+        <div class="item"><b>Geo:</b> ${esc(s.geoStart||'–')} &rarr; ${esc(s.geoStop||'–')}</div>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn primary" onclick="window.print()">Print</button>
+        <button class="btn" id="dlJson">Download JSON</button>
+        <button class="btn" onclick="window.close()">Close</button>
+      </div>
+
+      <div class="content">
+        <table>${rows}</table>
+      </div>
+
+      <div class="foot">
+        Submission stored locally (stand-alone demo). Use Backup/Restore from Admin to persist or migrate.
+      </div>
+    </div>
+  </div>
+
+<script>
+  (function(){
+    const payload = ${JSON.stringify({
+      id:s.id, assignmentId:s.assignmentId, store:st.name||'',
+      shopper:{name:sh.name||'', email:sh.email||''},
+      startedAt:s.startedAt||null, stoppedAt:s.stoppedAt||null,
+      durationSec:s.durationSec||0, status:s.status||'',
+      geoStart:s.geoStart||'', geoStop:s.geoStop||'',
+      form:{title:f.title||'', fields:f.fields||[]}, values:s.values||{}
+    })};
+    const btn = document.getElementById('dlJson');
+    if(btn){
+      btn.addEventListener('click', ()=>{
+        const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href=url; a.download='submission-'+payload.id+'.json'; a.click();
+        URL.revokeObjectURL(url);
+      });
+    }
+  })();
+<\/script>
+
+</body>
+</html>
       `);
-      w.document.close();
+      doc.document.close();
     },
+
     markSubmission(id, state){
       const db=DB(); const s=db.submissions.find(x=>x.id===id); if(!s) return;
       s.status=state; saveDB({submissions:db.submissions}); this.loadAll(); U.toast('Submission '+state);
