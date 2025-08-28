@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no" />
+<title>Mystery Shopper – Standalone</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#1d1d1f; --panel:#1a1a21; --panel2:#17171c;
+  --text:#ececec; --muted:#b9b9c2; --hint:#9a9aa3;
+  --accent1:#7325C5; --accent2:#FF6200; --accent3:#F43C6E;
+  --glass:rgba(255,255,255,0.06); --border:rgba(255,255,255,0.12);
+  --ok:#2ecc71; --warn:#f1c40f; --danger:#ff4d4d;
+  --radius:16px; --rsm:12px; --pad:14px; --padlg:20px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:"DM Sans",system-ui,-apple-system,Segoe UI,Roboto,Arial}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+.wrapper{max-width:1200px;margin:0 auto;padding:16px}
+.header{position:sticky;top:0;z-index:50;background:linear-gradient(180deg, rgba(29,29,31,.96), rgba(29,29,31,.86));backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+.header-inner{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 16px}
+.brand{display:flex;align-items:center;gap:10px}
+.badge{padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:var(--panel);font-size:12px;color:var(--muted)}
+.title{font-weight:700;letter-spacing:.3px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab{background:var(--panel);border:1px solid var(--border);padding:8px 12px;border-radius:999px;color:var(--muted)}
+.tab.active{background:linear-gradient(90deg,var(--accent1),var(--accent3));color:white;border-color:transparent}
+.btn{background:var(--panel);border:1px solid var(--border);padding:10px 14px;border-radius:12px;color:inherit}
+.btn.primary{background:linear-gradient(90deg,var(--accent1),var(--accent3));border:none;color:#fff}
+.btn.ok{background:var(--ok);border:none;color:#111}
+.btn.warn{background:var(--warn);border:none;color:#111}
+.btn.danger{background:var(--danger);border:none;color:#fff}
+.btn.small{padding:7px 10px;font-size:13px;border-radius:10px}
+.btn.block{display:block;width:100%}
+.grid{display:grid;gap:12px}
+.grid.two{grid-template-columns:1fr 1fr}
+.grid.three{grid-template-columns:1fr 1fr 1fr}
+@media(max-width:960px){.grid.two,.grid.three{grid-template-columns:1fr}}
+.card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--border);border-radius:var(--radius);padding:var(--padlg)}
+.section-title{display:flex;align-items:center;justify-content:space-between;margin:6px 0 12px}
+.section-title h3{margin:0;font-size:18px}
+.sub{font-size:12px;color:var(--hint)}
+.kv{display:flex;gap:10px;flex-wrap:wrap}
+.kv .pill{font-size:12px;color:var(--muted);border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:var(--glass)}
+.input, select, textarea{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:12px;outline:none}
+label{font-size:13px;color:var(--muted);display:block;margin:8px 0 6px}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+hr.sep{border:none;border-top:1px dashed var(--border);margin:14px 0}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{padding:10px;border-bottom:1px solid var(--border);text-align:left;font-size:14px;vertical-align:top}
+.table th{color:var(--muted);font-weight:600}
+.badge-ok{background:rgba(46,204,113,.15);color:#8ef5b7;border:1px solid rgba(46,204,113,.35)}
+.badge-warn{background:rgba(241,196,15,.12);color:#ffe27a;border:1px solid rgba(241,196,15,.35)}
+.badge-danger{background:rgba(255,77,77,.12);color:#ff9a9a;border:1px solid rgba(255,77,77,.35)}
+.pill-inline{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;margin-left:6px}
+
+/* Overlay timer */
+#timerOverlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px) saturate(120%);
+  display:none;align-items:center;justify-content:center;z-index:100;
+}
+.timer-box{
+  width:min(520px,90vw);background:linear-gradient(180deg,var(--panel),var(--panel2));
+  border:1px solid var(--border);border-radius:22px;padding:22px;text-align:center
+}
+.timer-digits{font-size:48px;font-weight:700;letter-spacing:2px;margin:6px 0 10px}
+.timer-meta{font-size:13px;color:var(--muted);margin-bottom:14px}
+
+/* Modals */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:90}
+.modal-card{width:min(680px,92vw);max-height:90vh;overflow:auto;background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--border);border-radius:18px;padding:18px}
+
+.toast{
+  position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:#111;border:1px solid var(--border);
+  border-radius:12px;padding:12px 16px;z-index:120;display:none
+}
+
+/* --- Select / Option legibility fix --- */
+select:focus, select:active{ background:#fff; color:#111; }
+option{ color:#111; background:#fff; }
+
+/* Utility */
+.hidden{display:none !important}
+.faded{opacity:.6}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="brand">
+      <div class="badge">MS</div>
+      <div class="title">Mystery Shopper Manager</div>
+      <div id="roleBadge" class="pill-inline badge-warn">Guest</div>
+    </div>
+    <div class="tabs">
+      <button id="tabShopper" class="tab active">Shopper</button>
+      <button id="tabAdmin" class="tab">Admin</button>
+      <button id="tabAuth" class="tab">Login</button>
+      <button id="tabProfile" class="tab hidden">Profile</button>
+      <button id="tabLogout" class="tab hidden">Logout</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrapper">
+
+  <!-- SHOPPER VIEW -->
+  <section id="viewShopper" class="grid two">
+    <div class="card">
+      <div class="section-title">
+        <h3>My Tasks</h3>
+        <div class="row" style="justify-content:flex-end;gap:8px">
+          <button class="btn small" onclick="App.refreshTasks()">Refresh</button>
+        </div>
+      </div>
+      <table class="table" id="tasksTable">
+        <thead>
+          <tr><th>Visit</th><th>When</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div id="tasksEmpty" class="sub hidden">No tasks assigned yet.</div>
+    </div>
+
+    <div id="visitCard" class="card hidden">
+      <div class="section-title">
+        <h3 id="visitTitle">Visit</h3>
+        <div class="row" style="justify-content:flex-end;gap:8px">
+          <button id="btnStartVisit" class="btn primary small" onclick="App.timer.start()">Start timer</button>
+          <button id="btnResetVisit" class="btn small" onclick="App.timer.reset()" title="Clear start/stop times">Reset</button>
+        </div>
+      </div>
+      <div class="kv">
+        <div class="pill" id="visitStore"></div>
+        <div class="pill" id="visitAddress"></div>
+        <div class="pill" id="visitWindow"></div>
+      </div>
+      <hr class="sep" />
+
+      <div class="row">
+        <div>
+          <label>Started at</label>
+          <input id="fldStartedAt" class="input" type="text" readonly />
+        </div>
+        <div>
+          <label>Stopped at</label>
+          <input id="fldStoppedAt" class="input" type="text" readonly />
+        </div>
+        <div>
+          <label>Duration (mm:ss)</label>
+          <input id="fldDuration" class="input" type="text" readonly />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Start location</label>
+          <input id="fldGeoStart" class="input" type="text" readonly />
+        </div>
+        <div>
+          <label>Stop location</label>
+          <input id="fldGeoStop" class="input" type="text" readonly />
+        </div>
+      </div>
+
+      <hr class="sep" />
+      <div id="dynamicForm"></div>
+
+      <div class="row" style="margin-top:12px">
+        <button class="btn" onclick="App.saveDraft()">Save draft</button>
+        <button class="btn ok" onclick="App.submitForm()">Submit to Admin</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ADMIN VIEW -->
+  <section id="viewAdmin" class="grid hidden">
+    <div class="card">
+      <div class="section-title">
+        <h3>Admin Dashboard</h3>
+        <div class="row" style="gap:8px">
+          <button class="btn small" onclick="App.admin.loadAll()">Refresh</button>
+          <button class="btn small" onclick="App.admin.backup()">Backup JSON</button>
+          <button class="btn small" onclick="App.admin.restore()">Restore JSON</button>
+          <button class="btn danger small" onclick="App.admin.factoryReset()">Factory Reset</button>
+        </div>
+      </div>
+
+      <div class="grid three">
+        <div class="card">
+          <div class="section-title"><h3>Forms</h3><button class="btn small" onclick="App.admin.openFormBuilder()">New</button></div>
+          <table class="table" id="tblForms"><thead><tr><th>Title</th><th>Fields</th><th></th></tr></thead><tbody></tbody></table>
+        </div>
+        <div class="card">
+          <div class="section-title"><h3>Shoppers</h3><button class="btn small" onclick="App.admin.openNewShopper()">Add</button></div>
+          <table class="table" id="tblShoppers"><thead><tr><th>Name</th><th>Email</th><th>Status</th><th></th></tr></thead><tbody></tbody></table>
+        </div>
+        <div class="card">
+          <div class="section-title"><h3>Stores</h3><button class="btn small" onclick="App.admin.openNewStore()">Add</button></div>
+          <table class="table" id="tblStores"><thead><tr><th>Name</th><th>City</th><th></th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title"><h3>Assignments</h3><button class="btn small" onclick="App.admin.openAssignment()">New assignment</button></div>
+        <table class="table" id="tblAssign"><thead><tr><th>Shopper</th><th>Store</th><th>Form</th><th>Window</th><th>Status</th><th></th></tr></thead><tbody></tbody></table>
+      </div>
+
+      <div class="card">
+        <div class="section-title"><h3>Submissions</h3><div class="row" style="gap:8px"><button class="btn small" onclick="App.admin.exportCSV()">Export CSV</button></div></div>
+        <table class="table" id="tblSubm"><thead><tr><th>Visit</th><th>Shopper</th><th>Duration</th><th>Status</th><th></th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- TIMER OVERLAY -->
+<div id="timerOverlay">
+  <div class="timer-box">
+    <div class="sub">Visit in progress</div>
+    <div class="timer-digits" id="timerDigits">00:00</div>
+    <div class="timer-meta" id="timerMeta">Started now</div>
+    <div class="row">
+      <button class="btn warn block" onclick="App.timer.stop()">Stop & unlock form</button>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div id="authModal" class="modal">
+  <div class="modal-card">
+    <div class="section-title"><h3>Sign in</h3><button class="btn small" onclick="App.ui.hideAuth()">Close</button></div>
+    <div class="row">
+      <div><label>Email / Username</label><input id="loginUser" class="input" placeholder="you@domain.com" /></div>
+      <div><label>Password</label><input id="loginPass" type="password" class="input" placeholder="••••••••" /></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn primary" onclick="App.auth.login()">Login</button>
+      <button class="btn" onclick="App.auth.openRegister()">Create account</button>
+    </div>
+    <hr class="sep" />
+    <!-- Register is ALWAYS pending + Shopper -->
+    <div id="registerBox" class="hidden">
+      <div class="row">
+        <div><label>Full name</label><input id="regName" class="input" placeholder="Your name" /></div>
+        <div><label>Email</label><input id="regEmail" class="input" placeholder="you@domain.com" /></div>
+      </div>
+      <div class="row">
+        <div><label>Password</label><input id="regPass1" type="password" class="input" /></div>
+        <div><label>Confirm</label><input id="regPass2" type="password" class="input" /></div>
+      </div>
+      <div class="sub">Account will be created as <b>Shopper</b> with status <b>Pending</b>. An admin must approve it.</div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn ok" onclick="App.auth.register()">Register</button>
+      </div>
+    </div>
+    <div id="seedInfo" class="sub" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div id="profileModal" class="modal">
+  <div class="modal-card">
+    <div class="section-title">
+      <h3>My Profile</h3>
+      <div class="row" style="gap:8px">
+        <button class="btn ok small" onclick="App.profile.save()">Save</button>
+        <button class="btn small" onclick="App.ui.closeModal('profileModal')">Close</button>
+      </div>
+    </div>
+    <div class="row">
+      <div><label>Name</label><input id="pfName" class="input" /></div>
+      <div><label>Email</label><input id="pfEmail" class="input" /></div>
+    </div>
+    <hr class="sep" />
+    <div class="row">
+      <div><label>Current password</label><input id="pfCurPass" type="password" class="input" placeholder="required to change password" /></div>
+      <div><label>New password</label><input id="pfNewPass1" type="password" class="input" /></div>
+    </div>
+    <div class="row">
+      <div><label>Confirm new password</label><input id="pfNewPass2" type="password" class="input" /></div>
+      <div><label>Role</label><input id="pfRole" class="input" readonly /></div>
+    </div>
+    <div class="sub">Leave password fields empty if you don't want to change it.</div>
+  </div>
+</div>
+
+<!-- FORM BUILDER MODAL -->
+<div id="formModal" class="modal">
+  <div class="modal-card">
+    <div class="section-title">
+      <h3 id="formModalTitle">Form Builder</h3>
+      <div class="row" style="gap:8px">
+        <button class="btn small" onclick="App.admin.addFieldUI()">Add field</button>
+        <button class="btn ok small" onclick="App.admin.saveForm()">Save</button>
+        <button class="btn small" onclick="App.ui.closeModal('formModal')">Close</button>
+      </div>
+    </div>
+    <label>Form title</label>
+    <input id="fbTitle" class="input" placeholder="e.g., Retail Visit v1" />
+    <hr class="sep" />
+    <div id="fbFields"></div>
+  </div>
+</div>
+
+<!-- NEW SHOPPER MODAL -->
+<div id="shopperModal" class="modal">
+  <div class="modal-card">
+    <div class="section-title"><h3>New Shopper/User</h3><button class="btn small" onclick="App.ui.closeModal('shopperModal')">Close</button></div>
+    <div class="row"><div><label>Name</label><input id="nsName" class="input" /></div><div><label>Email</label><input id="nsEmail" class="input" /></div></div>
+    <div class="row"><div><label>Password</label><input id="nsPass" type="password" class="input" /></div><div><label>Role</label><select id="nsRole" class="input"><option>Shopper</option><option>Admin</option></select></div></div>
+    <div class="row"><div><label>Status</label><select id="nsStatus" class="input"><option>pending</option><option>active</option><option>disabled</option></select></div><div></div></div>
+    <div class="row"><button class="btn ok" onclick="App.admin.saveNewShopper()">Save</button></div>
+  </div>
+</div>
+
+<!-- NEW STORE MODAL -->
+<div id="storeModal" class="modal">
+  <div class="modal-card">
+    <div class="section-title"><h3>New Store</h3><button class="btn small" onclick="App.ui.closeModal('storeModal')">Close</button></div>
+    <div class="row"><div><label>Name</label><input id="stName" class="input" /></div><div><label>City</label><input id="stCity" class="input" /></div></div>
+    <label>Address</label><input id="stAddress" class="input" />
+    <label>Notes</label><textarea id="stNotes" class="input" rows="3"></textarea>
+    <div class="row"><button class="btn ok" onclick="App.admin.saveNewStore()">Save</button></div>
+  </div>
+</div>
+
+<!-- NEW ASSIGNMENT MODAL -->
+<div id="assignModal" class="modal">
+  <div class="modal-card">
+    <div class="section-title"><h3>New Assignment</h3><button class="btn small" onclick="App.ui.closeModal('assignModal')">Close</button></div>
+    <div class="row">
+      <div><label>Shopper</label><select id="asShopper" class="input"></select></div>
+      <div><label>Store</label><select id="asStore" class="input"></select></div>
+    </div>
+    <div class="row">
+      <div><label>Form</label><select id="asForm" class="input"></select></div>
+      <div><label>Window</label>
+        <div class="row"><input id="asFrom" class="input" type="datetime-local"/><input id="asTo" class="input" type="datetime-local"/></div>
+      </div>
+    </div>
+    <div class="row"><button class="btn ok" onclick="App.admin.saveAssignment()">Create</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =======================
+   UTIL & STORAGE
+======================= */
+const U = {
+  uid: ()=>'id_'+Math.random().toString(36).slice(2)+Date.now().toString(36),
+  fmtDT(ts){ if(!ts) return ''; const d=new Date(ts); return d.toLocaleString(); },
+  pad(n){ return (n<10?'0':'')+n; },
+  fmtDuration(sec){ sec=Math.max(0,Math.floor(sec)); const m=Math.floor(sec/60); const s=sec%60; return U.pad(m)+':'+U.pad(s); },
+  async sha256(text){
+    const enc=new TextEncoder().encode(text);
+    const buf=await crypto.subtle.digest('SHA-256',enc);
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  },
+  j(x){return JSON.stringify(x)}, p(x){try{return JSON.parse(x)}catch(e){return null}},
+  lsGet(k,def){ const v=localStorage.getItem(k); return v?U.p(v):def; },
+  lsSet(k,v){ localStorage.setItem(k, U.j(v)); },
+  toast(msg,ms=2200){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',ms); },
+  download(filename, text){
+    const a=document.createElement('a'); a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(text); a.download=filename; a.click();
+  },
+  csvEscape(s){ if(s==null) return ''; s=String(s); return /[",\n]/.test(s)?('"'+s.replace(/"/g,'""')+'"'):s; }
+};
+
+const K = {
+  users:'ms_users', stores:'ms_stores', forms:'ms_forms',
+  assignments:'ms_assignments', submissions:'ms_submissions',
+  session:'ms_session', boot:'ms_bootstrap'
+};
+
+function DB(){
+  return {
+    users: U.lsGet(K.users, []),
+    stores: U.lsGet(K.stores, []),
+    forms: U.lsGet(K.forms, []),
+    assignments: U.lsGet(K.assignments, []),
+    submissions: U.lsGet(K.submissions, [])
+  };
+}
+function saveDB(partial){
+  const cur = DB();
+  U.lsSet(K.users, partial.users ?? cur.users);
+  U.lsSet(K.stores, partial.stores ?? cur.stores);
+  U.lsSet(K.forms, partial.forms ?? cur.forms);
+  U.lsSet(K.assignments, partial.assignments ?? cur.assignments);
+  U.lsSet(K.submissions, partial.submissions ?? cur.submissions);
+}
+
+/* Bootstrap: seed admin if empty */
+(async function seed(){
+  if(!localStorage.getItem(K.boot)){
+    const pass = await U.sha256('admin');
+    const admin = {id:U.uid(), name:'Admin', email:'admin@example.com', role:'Admin', status:'active', passHash:pass};
+    saveDB({users:[admin], stores:[], forms:[], assignments:[], submissions:[]});
+    localStorage.setItem(K.boot,'1');
+  }
+})();
+
+/* =======================
+   APP
+======================= */
+const App = {
+  state:{
+    me:null,
+    role:'Guest',
+    curAssign:null,
+    curForm:null,
+    curSubmission:null,
+    timer:{running:false,start:0,interval:null}
+  },
+
+  init(){
+    this.bindUI();
+    this.auth.restore();
+    this.routeByRole();
+    this.admin.loadAll(); 
+    this.refreshTasks();
+  },
+
+  bindUI(){
+    const qs = s=>document.querySelector(s);
+    qs('#tabShopper').onclick = ()=>this.ui.showView('shopper');
+    qs('#tabAdmin').onclick   = ()=>this.ui.showView('admin');
+    qs('#tabAuth').onclick    = ()=>this.ui.showAuth();
+    qs('#tabProfile').onclick = ()=>this.profile.open();
+    qs('#tabLogout').onclick  = ()=>this.auth.logout();
+  },
+
+  routeByRole(){
+    this.ui.updateAuthTabs();
+    if(!this.state.me){ this.ui.setRole('Guest'); this.ui.showView('shopper'); this.ui.showAuth(true); return; }
+    const r = this.state.me.role;
+    this.ui.setRole(r);
+    if(r==='Admin'){ this.ui.showView('admin'); }
+    else { this.ui.showView('shopper'); }
+  },
+
+  ui:{
+    showView(which){
+      const s=id=>document.getElementById(id);
+      const shopper=s('viewShopper'), admin=s('viewAdmin');
+      document.getElementById('tabShopper').classList.toggle('active', which==='shopper');
+      document.getElementById('tabAdmin').classList.toggle('active', which==='admin');
+      shopper.classList.toggle('hidden', which!=='shopper');
+      admin.classList.toggle('hidden', which!=='admin');
+    },
+    setRole(r){
+      App.state.role=r||'Guest';
+      const b=document.getElementById('roleBadge');
+      b.textContent=r||'Guest';
+      b.className='pill-inline '+(r==='Admin'?'badge-ok':r==='Shopper'?'badge-warn':'badge-danger');
+    },
+    updateAuthTabs(){
+      const me=App.state.me;
+      const show = (id, on)=>document.getElementById(id).classList.toggle('hidden', !on);
+      show('tabAuth', !me);
+      show('tabProfile', !!me);
+      show('tabLogout', !!me);
+    },
+    showAuth(open=true){
+      document.getElementById('authModal').style.display = open?'flex':'none';
+      document.getElementById('seedInfo').textContent = "Use your username or email to login, or submit for new account";
+    },
+    hideAuth(){ App.ui.showAuth(false); },
+    openModal(id){ document.getElementById(id).style.display='flex'; },
+    closeModal(id){ document.getElementById(id).style.display='none'; }
+  },
+
+  /* ---------- AUTH ---------- */
+  auth:{
+    async login(){
+      const user=document.getElementById('loginUser').value.trim().toLowerCase();
+      const pass=document.getElementById('loginPass').value;
+      const db=DB();
+      const found=db.users.find(u=>u.email.toLowerCase()===user || u.name.toLowerCase()===user);
+      if(!found) return U.toast('User not found');
+      const hash=await U.sha256(pass);
+      if(found.passHash!==hash) return U.toast('Wrong password');
+      if(found.status!=='active') return U.toast('Account not active');
+      U.lsSet(K.session,{uid:found.id});
+      App.state.me=found; App.ui.updateAuthTabs(); App.routeByRole(); App.ui.hideAuth(); App.refreshTasks(); App.admin.loadAll();
+      U.toast('Logged in');
+    },
+    openRegister(){ document.getElementById('registerBox').classList.remove('hidden'); },
+    async register(){
+      const name=document.getElementById('regName').value.trim();
+      const email=document.getElementById('regEmail').value.trim().toLowerCase();
+      const p1=document.getElementById('regPass1').value;
+      const p2=document.getElementById('regPass2').value;
+      if(!name || !email || !p1 || p1!==p2) return U.toast('Complete all fields, passwords must match');
+      const db=DB();
+      if(db.users.some(u=>u.email===email)) return U.toast('Email already exists');
+      const user={id:U.uid(), name, email, role:'Shopper', status:'pending', passHash:await U.sha256(p1)};
+      db.users.push(user); saveDB({users:db.users});
+      U.toast('Registered as Shopper. Wait for admin approval.');
+      document.getElementById('registerBox').classList.add('hidden');
+    },
+    restore(){
+      const sess=U.lsGet(K.session,null);
+      if(sess){ const db=DB(); App.state.me = db.users.find(u=>u.id===sess.uid) || null; }
+      App.ui.updateAuthTabs();
+    },
+    logout(){
+      localStorage.removeItem(K.session);
+      App.state.me=null; App.ui.updateAuthTabs(); App.routeByRole(); U.toast('Logged out');
+    }
+  },
+
+  /* ---------- PROFILE ---------- */
+  profile:{
+    open(){
+      const me=App.state.me; if(!me) return U.toast('Login first');
+      document.getElementById('pfName').value = me.name||'';
+      document.getElementById('pfEmail').value = me.email||'';
+      document.getElementById('pfRole').value = me.role||'';
+      document.getElementById('pfCurPass').value='';
+      document.getElementById('pfNewPass1').value='';
+      document.getElementById('pfNewPass2').value='';
+      App.ui.openModal('profileModal');
+    },
+    async save(){
+      const me=App.state.me; if(!me) return;
+      const name=document.getElementById('pfName').value.trim();
+      const email=document.getElementById('pfEmail').value.trim().toLowerCase();
+      const cur=document.getElementById('pfCurPass').value;
+      const n1=document.getElementById('pfNewPass1').value;
+      const n2=document.getElementById('pfNewPass2').value;
+
+      const db=DB();
+      if(!name || !email) return U.toast('Name and email required');
+      if(db.users.some(u=>u.email===email && u.id!==me.id)) return U.toast('Email already in use');
+
+      // password change (optional)
+      if(n1 || n2){
+        if(!cur) return U.toast('Enter current password to change it');
+        const curHash = await U.sha256(cur);
+        if(curHash!==me.passHash) return U.toast('Current password is incorrect');
+        if(n1!==n2) return U.toast('New passwords do not match');
+        me.passHash = await U.sha256(n1);
+      }
+      me.name=name; me.email=email;
+
+      // persist
+      const idx = db.users.findIndex(u=>u.id===me.id);
+      if(idx>-1){ db.users[idx]=me; saveDB({users:db.users}); }
+      App.state.me = me;
+      App.admin.loadAll(); // refresh tables if admin
+      App.ui.closeModal('profileModal');
+      U.toast('Profile saved');
+      App.ui.updateAuthTabs();
+    }
+  },
+
+  /* ---------- SHOPPER VIEW ---------- */
+  refreshTasks(){
+    const me=this.state.me; const db=DB();
+    const tbody=document.querySelector('#tasksTable tbody');
+    tbody.innerHTML='';
+    let tasks=[];
+    if(me){
+      tasks=db.assignments.filter(a=>a.shopperId===me.id);
+    }
+    if(!tasks.length){ document.getElementById('tasksEmpty').classList.remove('hidden'); }
+    else { document.getElementById('tasksEmpty').classList.add('hidden'); }
+    tasks.sort((a,b)=> (a.window?.from||0)-(b.window?.from||0));
+    tasks.forEach(a=>{
+      const store=db.stores.find(s=>s.id===a.storeId);
+      const form=db.forms.find(f=>f.id===a.formId);
+      const sub = db.submissions.find(s=>s.assignmentId===a.id && s.shopperId===a.shopperId);
+      const status = sub ? (sub.status||'submitted') : (a.status||'assigned');
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td>${store?store.name:'(Store)'} — <span class="sub">${form?form.title:''}</span></td>
+        <td>${a.window?.from? new Date(a.window.from).toLocaleString() : ''} ${a.window?.to ? '– '+new Date(a.window.to).toLocaleString() : ''}</td>
+        <td>${status}</td>
+        <td><button class="btn small" onclick="App.openAssignment('${a.id}')">Open</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  },
+
+  openAssignment(assignId){
+    const db=DB();
+    const a = db.assignments.find(x=>x.id===assignId);
+    if(!a) return;
+    const store=db.stores.find(s=>s.id===a.storeId)||{};
+    const form = db.forms.find(f=>f.id===a.formId)||{fields:[],title:'Form'};
+    this.state.curAssign=a; this.state.curForm=form;
+    let sub = db.submissions.find(s=>s.assignmentId===a.id && s.shopperId===a.shopperId);
+    if(!sub){ sub = {id:U.uid(), assignmentId:a.id, shopperId:a.shopperId, storeId:a.storeId, formId:a.formId, status:'draft', values:{}}; db.submissions.push(sub); saveDB({submissions:db.submissions}); }
+    this.state.curSubmission=sub;
+
+    document.getElementById('visitCard').classList.remove('hidden');
+    document.getElementById('visitTitle').textContent = `Visit — ${form.title}`;
+    document.getElementById('visitStore').textContent = store.name || '';
+    document.getElementById('visitAddress').textContent = store.address || '';
+    const win= a.window? (new Date(a.window.from).toLocaleString() + (a.window.to? ' – '+new Date(a.window.to).toLocaleString() : '')) : '';
+    document.getElementById('visitWindow').textContent = win;
+
+    document.getElementById('fldStartedAt').value = sub.startedAt? U.fmtDT(sub.startedAt):'';
+    document.getElementById('fldStoppedAt').value = sub.stoppedAt? U.fmtDT(sub.stoppedAt):'';
+    document.getElementById('fldDuration').value = sub.durationSec? U.fmtDuration(sub.durationSec):'';
+    document.getElementById('fldGeoStart').value = sub.geoStart || '';
+    document.getElementById('fldGeoStop').value  = sub.geoStop  || '';
+
+    const host=document.getElementById('dynamicForm'); host.innerHTML='';
+    form.fields.forEach(f=>{
+      const wrap=document.createElement('div');
+      wrap.style.marginBottom='10px';
+      const req = f.required? ' <span class="sub">(required)</span>' : '';
+      wrap.innerHTML = `<label>${f.label}${req}</label>`;
+      let el=null;
+      const val = sub.values[f.id] ?? '';
+      if(f.type==='text'){
+        el=document.createElement('input'); el.className='input'; el.value=val;
+      } else if(f.type==='textarea'){
+        el=document.createElement('textarea'); el.className='input'; el.rows=3; el.value=val;
+      } else if(f.type==='number'){
+        el=document.createElement('input'); el.className='input'; el.type='number'; el.value=val;
+      } else if(f.type==='yesno'){
+        el=document.createElement('select'); el.className='input';
+        el.innerHTML='<option value="">Select</option><option>Yes</option><option>No</option>';
+        el.value=val;
+      } else if(f.type==='select'){
+        el=document.createElement('select'); el.className='input';
+        const opts = (f.options||[]); el.innerHTML = '<option value="">Select</option>'+opts.map(o=>`<option>${o}</option>`).join('');
+        el.value=val;
+      } else if(f.type==='rating'){
+        el=document.createElement('input'); el.className='input'; el.type='number'; el.min=1; el.max=5; el.step=1; el.placeholder='1-5'; el.value=val;
+      } else {
+        el=document.createElement('input'); el.className='input'; el.value=val;
+      }
+      el.oninput = ()=>{ App.state.curSubmission.values[f.id]=el.value; App._saveSub(); };
+      wrap.appendChild(el);
+      host.appendChild(wrap);
+    });
+
+    if(!sub.startedAt){ U.toast('Press "Start timer" before beginning'); }
+  },
+
+  _saveSub(){ const db=DB(); const idx=db.submissions.findIndex(s=>s.id===App.state.curSubmission.id); if(idx>-1){ db.submissions[idx]=App.state.curSubmission; saveDB({submissions:db.submissions}); }},
+
+  async saveDraft(){
+    const sub=this.state.curSubmission; if(!sub) return;
+    sub.status='draft'; this._saveSub(); U.toast('Draft saved');
+  },
+
+  submitForm(){
+    const sub=this.state.curSubmission, form=this.state.curForm;
+    if(!sub || !form) return;
+    if(!sub.startedAt || !sub.stoppedAt){ return U.toast('Stop the timer before submitting'); }
+    const missing = (form.fields||[]).filter(f=>f.required && (sub.values[f.id]==null || sub.values[f.id]===''));
+    if(missing.length){ return U.toast('Please fill all required fields'); }
+    sub.status='submitted'; sub.submittedAt=Date.now(); this._saveSub();
+    const db=DB(); const aIdx=db.assignments.findIndex(a=>a.id===sub.assignmentId);
+    if(aIdx>-1){ db.assignments[aIdx].status='submitted'; saveDB({assignments:db.assignments}); }
+    this.refreshTasks(); this.admin.loadAll();
+    U.toast('Submitted to admin');
+  },
+
+  /* ---------- TIMER ---------- */
+  timer:{
+    async start(){
+      const me=App.state.me; if(!me) return U.toast('Login first');
+      const sub=App.state.curSubmission; if(!sub) return U.toast('Open a task first');
+      if(sub.startedAt){ return U.toast('Timer already started'); }
+      if(navigator.geolocation){
+        navigator.geolocation.getCurrentPosition(pos=>{
+          const {latitude,longitude}=pos.coords; sub.geoStart=`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`; App._saveSub(); document.getElementById('fldGeoStart').value=sub.geoStart;
+        },()=>{ /* ignore */ });
+      }
+      sub.startedAt=Date.now(); sub.stoppedAt=null; sub.durationSec=null; App._saveSub();
+      document.getElementById('fldStartedAt').value=U.fmtDT(sub.startedAt);
+      App.state.timer.running=true; App.state.timer.start=sub.startedAt;
+      document.getElementById('timerOverlay').style.display='flex';
+      App.state.timer.interval = setInterval(()=>{
+        const secs=(Date.now()-App.state.timer.start)/1000;
+        document.getElementById('timerDigits').textContent = U.fmtDuration(secs);
+        document.getElementById('timerMeta').textContent = 'Started at '+U.fmtDT(App.state.timer.start);
+      }, 250);
+    },
+    stop(){
+      const sub=App.state.curSubmission; if(!sub || !App.state.timer.running) return;
+      sub.stoppedAt=Date.now(); sub.durationSec=Math.floor((sub.stoppedAt - sub.startedAt)/1000);
+      if(navigator.geolocation){
+        navigator.geolocation.getCurrentPosition(pos=>{
+          const {latitude,longitude}=pos.coords; sub.geoStop=`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`; App._saveSub(); document.getElementById('fldGeoStop').value=sub.geoStop;
+        },()=>{ /* ignore */ });
+      }
+      App._saveSub();
+      document.getElementById('fldStoppedAt').value=U.fmtDT(sub.stoppedAt);
+      document.getElementById('fldDuration').value=U.fmtDuration(sub.durationSec);
+      clearInterval(App.state.timer.interval); App.state.timer.running=false; document.getElementById('timerOverlay').style.display='none';
+      U.toast('Timer stopped — you can fill the form now');
+    },
+    reset(){
+      const sub=App.state.curSubmission; if(!sub) return;
+      if(App.state.timer.running) return U.toast('Stop timer first');
+      sub.startedAt=null; sub.stoppedAt=null; sub.durationSec=null; sub.geoStart=''; sub.geoStop=''; App._saveSub();
+      document.getElementById('fldStartedAt').value='';
+      document.getElementById('fldStoppedAt').value='';
+      document.getElementById('fldDuration').value='';
+      document.getElementById('fldGeoStart').value='';
+      document.getElementById('fldGeoStop').value='';
+      U.toast('Visit times cleared');
+    }
+  },
+
+  /* ---------- ADMIN ---------- */
+  admin:{
+    loadAll(){
+      const db=DB();
+      const tf=document.querySelector('#tblForms tbody'); tf.innerHTML='';
+      db.forms.forEach(f=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${f.title}</td><td>${(f.fields||[]).length}</td>
+          <td>
+            <button class="btn small" onclick="App.admin.openFormBuilder('${f.id}')">Edit</button>
+            <button class="btn danger small" onclick="App.admin.deleteForm('${f.id}')">Delete</button>
+          </td>`;
+        tf.appendChild(tr);
+      });
+      const ts=document.querySelector('#tblShoppers tbody'); ts.innerHTML='';
+      db.users.forEach(u=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${u.name}</td><td>${u.email}</td>
+          <td>${u.status} <span class="pill-inline">${u.role}</span></td>
+          <td>
+            <button class="btn small" onclick="App.admin.toggleUser('${u.id}','active')">Activate</button>
+            <button class="btn small" onclick="App.admin.toggleUser('${u.id}','pending')">Pending</button>
+            <button class="btn small" onclick="App.admin.toggleUser('${u.id}','disabled')">Disable</button>
+            <button class="btn danger small" onclick="App.admin.deleteUser('${u.id}')">Delete</button>
+          </td>`;
+        ts.appendChild(tr);
+      });
+      const tstore=document.querySelector('#tblStores tbody'); tstore.innerHTML='';
+      db.stores.forEach(s=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${s.name}</td><td>${s.city||''}</td>
+          <td><button class="btn small" onclick="App.admin.editStore('${s.id}')">Edit</button>
+              <button class="btn danger small" onclick="App.admin.deleteStore('${s.id}')">Delete</button></td>`;
+        tstore.appendChild(tr);
+      });
+      const ta=document.querySelector('#tblAssign tbody'); ta.innerHTML='';
+      db.assignments.forEach(a=>{
+        const sh=db.users.find(u=>u.id===a.shopperId);
+        const st=db.stores.find(s=>s.id===a.storeId);
+        const f =db.forms.find(x=>x.id===a.formId);
+        const sub = db.submissions.find(s=>s.assignmentId===a.id);
+        const status = sub? (sub.status||'submitted') : (a.status||'assigned');
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${sh?sh.name:''}</td><td>${st?st.name:''}</td><td>${f?f.title:''}</td>
+        <td>${a.window?.from? new Date(a.window.from).toLocaleString():''} ${a.window?.to? '– '+new Date(a.window.to).toLocaleString():''}</td>
+        <td>${status}</td>
+        <td>
+          <button class="btn small" onclick="App.admin.openAssignment('${a.id}')">Open</button>
+          <button class="btn danger small" onclick="App.admin.deleteAssignment('${a.id}')">Delete</button>
+        </td>`;
+        ta.appendChild(tr);
+      });
+      const tsu=document.querySelector('#tblSubm tbody'); tsu.innerHTML='';
+      db.submissions.forEach(s=>{
+        const st=db.stores.find(o=>o.id===s.storeId)||{};
+        const sh=db.users.find(o=>o.id===s.shopperId)||{};
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${st.name||''}</td><td>${sh.name||''}</td><td>${s.durationSec?U.fmtDuration(s.durationSec):''}</td>
+        <td>${s.status||''}</td>
+        <td>
+          <button class="btn small" onclick="App.admin.viewSubmission('${s.id}')">View</button>
+          <button class="btn small" onclick="App.admin.markSubmission('${s.id}','approved')">Approve</button>
+          <button class="btn small" onclick="App.admin.markSubmission('${s.id}','rejected')">Reject</button>
+          <button class="btn danger small" onclick="App.admin.deleteSubmission('${s.id}')">Delete</button>
+        </td>`;
+        tsu.appendChild(tr);
+      });
+    },
+
+    /* Forms CRUD */
+    _editingFormId:null,
+    openFormBuilder(id=null){
+      this._editingFormId=id;
+      const db=DB(); let form = id? db.forms.find(f=>f.id===id): {id:U.uid(), title:'', fields:[]};
+      this._fbForm = JSON.parse(JSON.stringify(form));
+      document.getElementById('fbTitle').value = this._fbForm.title||'';
+      document.getElementById('formModalTitle').textContent = id? 'Edit Form' : 'New Form';
+      App.admin.renderFBFields();
+      App.ui.openModal('formModal');
+    },
+    _fbForm:{id:null,title:'',fields:[]},
+    renderFBFields(){
+      const host=document.getElementById('fbFields'); host.innerHTML='';
+      const form=this._fbForm;
+      if(!form.fields.length){ host.innerHTML='<div class="sub">No fields yet. Click "Add field".</div>'; return; }
+      form.fields.forEach((f,idx)=>{
+        const box=document.createElement('div'); box.className='card';
+        box.innerHTML=`
+          <div class="section-title"><h3>Field ${idx+1}</h3>
+            <div class="row" style="gap:6px">
+              <button class="btn small" onclick="App.admin.moveField(${idx},-1)">↑</button>
+              <button class="btn small" onclick="App.admin.moveField(${idx},1)">↓</button>
+              <button class="btn danger small" onclick="App.admin.delField(${idx})">Delete</button>
+            </div>
+          </div>
+          <div class="row">
+            <div><label>Label</label><input class="input" value="${f.label||''}" oninput="App.admin.updateField(${idx},'label',this.value)"/></div>
+            <div><label>Type</label>
+              <select class="input" onchange="App.admin.updateField(${idx},'type',this.value)">
+                ${['text','textarea','number','yesno','select','rating'].map(t=>`<option ${f.type===t?'selected':''}>${t}</option>`).join('')}
+              </select>
+            </div>
+            <div><label>Required</label>
+              <select class="input" onchange="App.admin.updateField(${idx},'required',this.value==='true')">
+                <option value="false" ${!f.required?'selected':''}>No</option>
+                <option value="true" ${f.required?'selected':''}>Yes</option>
+              </select>
+            </div>
+          </div>
+          <div ${f.type==='select'?'':'class="hidden"'} id="opt_${idx}">
+            <label>Options (comma separated)</label>
+            <input class="input" value="${(f.options||[]).join(', ')}" oninput="App.admin.updateOptions(${idx}, this.value)"/>
+          </div>
+        `;
+        host.appendChild(box);
+      });
+    },
+    addFieldUI(){
+      this._fbForm.fields.push({id:U.uid(), label:'New field', type:'text', required:false, options:[]});
+      this.renderFBFields();
+    },
+    moveField(i,dir){
+      const arr=this._fbForm.fields; const j=i+dir; if(j<0||j>=arr.length) return;
+      [arr[i],arr[j]]=[arr[j],arr[i]]; this.renderFBFields();
+    },
+    delField(i){ this._fbForm.fields.splice(i,1); this.renderFBFields(); },
+    updateField(i,key,val){
+      this._fbForm.fields[i][key]=val;
+      if(key==='type'){ setTimeout(()=>this.renderFBFields(),0); }
+    },
+    updateOptions(i, raw){ this._fbForm.fields[i].options = raw.split(',').map(s=>s.trim()).filter(Boolean); },
+    saveForm(){
+      const title=document.getElementById('fbTitle').value.trim();
+      if(!title) return U.toast('Title is required');
+      this._fbForm.title=title;
+      const db=DB();
+      if(this._editingFormId){
+        const idx=db.forms.findIndex(f=>f.id===this._editingFormId);
+        if(idx>-1) db.forms[idx]=this._fbForm;
+      } else { db.forms.push(this._fbForm); }
+      saveDB({forms:db.forms}); App.admin.loadAll(); App.ui.closeModal('formModal'); U.toast('Form saved');
+    },
+    deleteForm(id){
+      const db=DB(); db.forms=db.forms.filter(f=>f.id!==id); saveDB({forms:db.forms}); this.loadAll(); U.toast('Form deleted');
+    },
+
+    /* Users */
+    openNewShopper(){ App.ui.openModal('shopperModal'); },
+    async saveNewShopper(){
+      const name=document.getElementById('nsName').value.trim();
+      const email=document.getElementById('nsEmail').value.trim().toLowerCase();
+      const pass=document.getElementById('nsPass').value;
+      const role=document.getElementById('nsRole').value;
+      const status=document.getElementById('nsStatus').value;
+      if(!name||!email||!pass) return U.toast('Fill all fields');
+      const db=DB(); if(db.users.some(u=>u.email===email)) return U.toast('Email exists');
+      db.users.push({id:U.uid(), name,email, role, status, passHash:await U.sha256(pass)});
+      saveDB({users:db.users}); App.ui.closeModal('shopperModal'); this.loadAll(); U.toast('User saved');
+    },
+    toggleUser(id, status){
+      const db=DB(); const u=db.users.find(x=>x.id===id); if(!u) return;
+      u.status=status; saveDB({users:db.users}); this.loadAll(); U.toast('User '+status);
+    },
+    deleteUser(id){
+      const db=DB();
+      db.users = db.users.filter(u=>u.id!==id);
+      db.assignments = db.assignments.filter(a=>a.shopperId!==id);
+      db.submissions = db.submissions.filter(s=>s.shopperId!==id);
+      saveDB({users:db.users, assignments:db.assignments, submissions:db.submissions});
+      this.loadAll(); U.toast('User deleted');
+    },
+
+    /* Stores */
+    openNewStore(){ App.ui.openModal('storeModal'); },
+    saveNewStore(){
+      const name=document.getElementById('stName').value.trim();
+      if(!name) return U.toast('Store name required');
+      const city=document.getElementById('stCity').value.trim();
+      const address=document.getElementById('stAddress').value.trim();
+      const notes=document.getElementById('stNotes').value.trim();
+      const db=DB(); db.stores.push({id:U.uid(), name, city, address, notes});
+      saveDB({stores:db.stores}); App.ui.closeModal('storeModal'); this.loadAll(); U.toast('Store saved');
+    },
+    editStore(id){
+      const db=DB(); const s=db.stores.find(x=>x.id===id); if(!s) return;
+      App.ui.openModal('storeModal');
+      document.getElementById('stName').value=s.name;
+      document.getElementById('stCity').value=s.city||'';
+      document.getElementById('stAddress').value=s.address||'';
+      document.getElementById('stNotes').value=s.notes||'';
+      const btn = document.querySelector('#storeModal .btn.ok');
+      btn.onclick = ()=>{
+        s.name=document.getElementById('stName').value.trim();
+        s.city=document.getElementById('stCity').value.trim();
+        s.address=document.getElementById('stAddress').value.trim();
+        s.notes=document.getElementById('stNotes').value.trim();
+        saveDB({stores:db.stores}); App.ui.closeModal('storeModal'); App.admin.loadAll(); U.toast('Store updated');
+        btn.onclick = App.admin.saveNewStore;
+      };
+    },
+    deleteStore(id){
+      const db=DB();
+      db.stores = db.stores.filter(s=>s.id!==id);
+      db.assignments = db.assignments.filter(a=>a.storeId!==id);
+      db.submissions = db.submissions.filter(s=>s.storeId!==id);
+      saveDB({stores:db.stores, assignments:db.assignments, submissions:db.submissions});
+      this.loadAll(); U.toast('Store deleted');
+    },
+
+    /* Assignments */
+    openAssignment(id=null){
+      const db=DB();
+      const shoppers = db.users.filter(u=>u.status==='active');
+      const stores   = db.stores;
+      const forms    = db.forms;
+      const s1=document.getElementById('asShopper'); s1.innerHTML=shoppers.map(u=>`<option value="${u.id}">${u.name} — ${u.email}</option>`).join('');
+      const s2=document.getElementById('asStore');   s2.innerHTML=stores.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+      const s3=document.getElementById('asForm');    s3.innerHTML=forms.map(f=>`<option value="${f.id}">${f.title}</option>`).join('');
+      document.getElementById('asFrom').value=''; document.getElementById('asTo').value='';
+      if(id){
+        const a=db.assignments.find(x=>x.id===id); if(a){
+          s1.value=a.shopperId; s2.value=a.storeId; s3.value=a.formId;
+          if(a.window?.from) document.getElementById('asFrom').value = new Date(a.window.from).toISOString().slice(0,16);
+          if(a.window?.to)   document.getElementById('asTo').value   = new Date(a.window.to).toISOString().slice(0,16);
+        }
+      }
+      App.ui.openModal('assignModal');
+    },
+    saveAssignment(){
+      const shopperId=document.getElementById('asShopper').value;
+      const storeId=document.getElementById('asStore').value;
+      const formId=document.getElementById('asForm').value;
+      const from=document.getElementById('asFrom').value? new Date(document.getElementById('asFrom').value).getTime():null;
+      const to  =document.getElementById('asTo').value?   new Date(document.getElementById('asTo').value).getTime():null;
+      if(!shopperId||!storeId||!formId) return U.toast('Pick shopper, store and form');
+      const db=DB();
+      db.assignments.push({id:U.uid(), shopperId, storeId, formId, window:{from,to}, status:'assigned'});
+      saveDB({assignments:db.assignments}); App.ui.closeModal('assignModal'); this.loadAll(); U.toast('Assignment created');
+    },
+    deleteAssignment(id){
+      const db=DB();
+      db.assignments = db.assignments.filter(a=>a.id!==id);
+      db.submissions = db.submissions.filter(s=>s.assignmentId!==id);
+      saveDB({assignments:db.assignments, submissions:db.submissions});
+      this.loadAll(); U.toast('Assignment deleted');
+    },
+
+    /* Submissions */
+    viewSubmission(id){
+      const db=DB(); const s=db.submissions.find(x=>x.id===id); if(!s) return;
+      const st=db.stores.find(o=>o.id===s.storeId)||{}, f=db.forms.find(o=>o.id===s.formId)||{fields:[]}, sh=db.users.find(o=>o.id===s.shopperId)||{};
+      const w=window.open('', '_blank');
+      const rows = Object.entries(s.values||{}).map(([k,v])=>{
+        const fld = f.fields.find(x=>x.id===k);
+        return `<tr><td style="padding:6px;border-bottom:1px solid #ddd">${fld?fld.label:k}</td><td style="padding:6px;border-bottom:1px solid #ddd">${(v??'')}</td></tr>`;
+      }).join('');
+      w.document.write(`
+        <html><head><title>Submission</title></head><body>
+        <h3>Submission ${id}</h3>
+        <p><b>Store:</b> ${st.name||''} | <b>Shopper:</b> ${sh.name||''}</p>
+        <p><b>Started:</b> ${U.fmtDT(s.startedAt)} | <b>Stopped:</b> ${U.fmtDT(s.stoppedAt)} | <b>Duration:</b> ${U.fmtDuration(s.durationSec||0)}</p>
+        <p><b>Geo:</b> ${s.geoStart||''} → ${s.geoStop||''}</p>
+        <table cellspacing="0" cellpadding="0" style="border-collapse:collapse">${rows}</table>
+        </body></html>
+      `);
+      w.document.close();
+    },
+    markSubmission(id, state){
+      const db=DB(); const s=db.submissions.find(x=>x.id===id); if(!s) return;
+      s.status=state; saveDB({submissions:db.submissions}); this.loadAll(); U.toast('Submission '+state);
+    },
+    deleteSubmission(id){
+      const db=DB(); db.submissions=db.submissions.filter(s=>s.id!==id); saveDB({submissions:db.submissions}); this.loadAll(); U.toast('Submission deleted');
+    },
+
+    /* Export / Backup */
+    exportCSV(){
+      const db=DB();
+      const rows=[];
+      const header=['submissionId','assignmentId','shopperName','shopperEmail','store','startedAt','stoppedAt','durationSec','status','geoStart','geoStop','formTitle','valuesJSON'];
+      rows.push(header.join(','));
+      db.submissions.forEach(s=>{
+        const sh=db.users.find(u=>u.id===s.shopperId)||{};
+        const st=db.stores.find(x=>x.id===s.storeId)||{};
+        const f =db.forms.find(x=>x.id===s.formId)||{};
+        const vals=U.j(s.values||{});
+        const r=[
+          s.id, s.assignmentId, sh.name||'', sh.email||'', st.name||'',
+          U.fmtDT(s.startedAt), U.fmtDT(s.stoppedAt), s.durationSec||0, s.status||'',
+          s.geoStart||'', s.geoStop||'', f.title||'', vals
+        ].map(U.csvEscape).join(',');
+        rows.push(r);
+      });
+      U.download('submissions.csv', rows.join('\n'));
+    },
+    backup(){
+      const dump=U.j(DB());
+      U.download('mystery-shopper-backup.json', dump);
+    },
+    restore(){
+      const inp=document.createElement('input'); inp.type='file'; inp.accept='application/json';
+      inp.onchange = e=>{
+        const f=e.target.files[0]; if(!f) return;
+        const reader=new FileReader();
+        reader.onload = ()=>{ try{
+          const data=JSON.parse(reader.result);
+          if(!data) return U.toast('Invalid JSON');
+          saveDB({users:data.users||[], stores:data.stores||[], forms:data.forms||[], assignments:data.assignments||[], submissions:data.submissions||[]});
+          App.admin.loadAll(); App.refreshTasks(); U.toast('Restore complete');
+        }catch(err){ U.toast('Restore failed'); } };
+        reader.readAsText(f);
+      };
+      inp.click();
+    },
+    factoryReset(){
+      if(!confirm('Erase all data?')) return;
+      localStorage.removeItem(K.users);
+      localStorage.removeItem(K.stores);
+      localStorage.removeItem(K.forms);
+      localStorage.removeItem(K.assignments);
+      localStorage.removeItem(K.submissions);
+      localStorage.removeItem(K.session);
+      localStorage.removeItem(K.boot);
+      location.reload();
+    }
+  }
+};
+
+window.addEventListener('load', ()=>App.init());
+</script>
+</body>
+</html>
