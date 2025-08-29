@@ -6,6 +6,8 @@
   name="viewport"
   content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover"
 />
+<meta name="theme-color" content="#1d1d1f" />
+<meta name="format-detection" content="telephone=no" />
 <title>Mystery Shopper – Standalone</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
 <style>
@@ -20,6 +22,7 @@
 
 /* Base / layout */
 *{box-sizing:border-box}
+html{ -webkit-text-size-adjust:100%; }
 html,body{
   height:100%;
   margin:0;
@@ -30,18 +33,32 @@ html,body{
 /* Hide scrollbars (still scrollable) */
 body{ overflow-y:auto; -ms-overflow-style:none; scrollbar-width:none; touch-action:pan-x pan-y; overscroll-behavior-y:none; }
 body::-webkit-scrollbar{ width:0; height:0 }
+img,svg,video{max-width:100%;height:auto;display:block}
+
+/* Remove blue tap highlight on iOS/Android + prevent accidental selection on controls */
+a,button,.tab,.btn,.mi{ -webkit-tap-highlight-color:transparent; -webkit-touch-callout:none; user-select:none; touch-action:manipulation; }
+button:focus,.btn:focus,.tab:focus,.mi:focus{ outline:none; box-shadow:0 0 0 2px rgba(255,255,255,.08) inset; }
+::selection{ background:rgba(115,37,197,.35); color:#fff }
 
 /* Links & buttons */
 a{color:inherit;text-decoration:none}
 button{font-family:inherit;cursor:pointer}
 
 /* Container spacing more airy */
-.wrapper{max-width:1200px;margin:0 auto;padding:20px}
+.wrapper{max-width:1200px;margin:0 auto;padding:20px 20px calc(20px + env(safe-area-inset-bottom))}
 .wrapper > section{ margin-bottom:28px; }
 
 /* Header */
-.header{position:sticky;top:0;z-index:50;background:linear-gradient(180deg, rgba(29,29,31,.96), rgba(29,29,31,.86));backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
-.header-inner{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 16px}
+.header{
+  position:sticky;top:0;z-index:50;
+  background:linear-gradient(180deg, rgba(29,29,31,.96), rgba(29,29,31,.86));
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border)
+}
+.header-inner{
+  display:flex;gap:12px;align-items:center;justify-content:space-between;
+  padding:12px calc(16px + env(safe-area-inset-right)) 12px calc(16px + env(safe-area-inset-left));
+}
 .brand{display:flex;align-items:center;gap:10px}
 .badge{padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:var(--panel);font-size:12px;color:var(--muted)}
 .title{font-weight:700;letter-spacing:.3px}
@@ -51,7 +68,8 @@ button{font-family:inherit;cursor:pointer}
 .tab.active{background:linear-gradient(90deg,var(--accent1),var(--accent3));color:white;border-color:transparent}
 
 /* Controls */
-.btn{background:var(--panel);border:1px solid var(--border);padding:10px 14px;border-radius:12px;color:inherit}
+.btn{background:var(--panel);border:1px solid var(--border);padding:10px 14px;border-radius:12px;color:inherit; transition:transform .06s ease;}
+.btn:active{ transform:translateY(1px) scale(.99); }
 .btn.primary{background:linear-gradient(90deg,var(--accent1),var(--accent3));border:none;color:#fff}
 .btn.ok{background:var(--ok);border:none;color:#111}
 .btn.warn{background:var(--warn);border:none;color:#111}
@@ -66,27 +84,37 @@ button{font-family:inherit;cursor:pointer}
 
 /* Cards */
 .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--border);border-radius:var(--radius);padding:22px}
-.section-title{display:flex;align-items:center;justify-content:space-between;margin:6px 0 14px}
+.section-title{display:flex;align-items:center;justify-content:space-between;margin:6px 0 14px;gap:10px;flex-wrap:wrap}
 .section-title h3{margin:0;font-size:18px}
 .sub{font-size:12px;color:var(--hint)}
 .kv{display:flex;gap:10px;flex-wrap:wrap}
 .kv .pill{font-size:12px;color:var(--muted);border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:var(--glass)}
 
 /* Inputs */
-.input, select, textarea{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:12px;outline:none}
+.input, select, textarea{
+  width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:12px;outline:none
+}
+input,textarea,select{ -webkit-user-select:text; user-select:text; }
+input[type=number]{ -moz-appearance:textfield; }
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
 label{font-size:13px;color:var(--muted);display:block;margin:8px 0 6px}
 .row{display:flex;gap:12px}
 .row>*{flex:1}
 hr.sep{border:none;border-top:1px dashed var(--border);margin:14px 0}
 
 /* Tables */
-.table{width:100%;border-collapse:collapse}
+.table{width:100%;border-collapse:collapse;min-width:600px}
 .table th,.table td{padding:10px;border-bottom:1px solid var(--border);text-align:left;font-size:14px;vertical-align:top}
 .table th{color:var(--muted);font-weight:600}
 .badge-ok{background:rgba(46,204,113,.15);color:#8ef5b7;border:1px solid rgba(46,204,113,.35)}
 .badge-warn{background:rgba(241,196,15,.12);color:#ffe27a;border:1px solid rgba(241,196,15,.35)}
 .badge-danger{background:rgba(255,77,77,.12);color:#ff9a9a;border:1px solid rgba(255,77,77,.35)}
 .pill-inline{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;margin-left:6px}
+
+/* Table wrapper (mobile horizontal scroll without visible scrollbar) */
+.table-wrap{ width:100%; overflow:auto hidden; -ms-overflow-style:none; scrollbar-width:none; }
+.table-wrap::-webkit-scrollbar{ display:none; }
 
 /* Shopper actions row (horizontal buttons under user) */
 .user-actions{ padding:8px 0 12px; }
@@ -139,7 +167,7 @@ hr.sep{border:none;border-top:1px dashed var(--border);margin:14px 0}
 
 /* Toast */
 .toast{
-  position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:#111;border:1px solid var(--border);
+  position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom));background:#111;border:1px solid var(--border);
   border-radius:12px;padding:12px 16px;z-index:120;display:none
 }
 
@@ -147,7 +175,17 @@ hr.sep{border:none;border-top:1px dashed var(--border);margin:14px 0}
 select:focus, select:active{ background:#fff; color:#111; }
 option{ color:#111; background:#fff; }
 
-/* Utils */
+/* Mobile tweaks */
+@media (max-width: 680px){
+  .header-inner{ padding:10px calc(12px + env(safe-area-inset-right)) 10px calc(12px + env(safe-area-inset-left)); }
+  .title{ font-size:14px }
+  .tabs .tab{ padding:8px 10px; font-size:13px }
+  .card{ padding:16px }
+  .section-title h3{ font-size:16px }
+  .row{ flex-direction:column; }
+  .kv .pill{ padding:5px 8px }
+  .table{ min-width:520px } /* reduce min width on phones to need less scroll */
+}
 .hidden{display:none !important}
 .faded{opacity:.6}
 </style>
@@ -182,12 +220,14 @@ option{ color:#111; background:#fff; }
           <button class="btn small" onclick="App.refreshTasks()">Refresh</button>
         </div>
       </div>
-      <table class="table" id="tasksTable">
-        <thead>
-          <tr><th>Visit</th><th>When</th><th>Status</th><th></th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="table-wrap">
+        <table class="table" id="tasksTable">
+          <thead>
+            <tr><th>Visit</th><th>When</th><th>Status</th><th></th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
       <div id="tasksEmpty" class="sub hidden">No tasks assigned yet.</div>
     </div>
 
@@ -267,22 +307,28 @@ option{ color:#111; background:#fff; }
           <!-- FORMS PANEL -->
           <div id="panelForms" class="card hidden">
             <div class="section-title"><h3>Forms</h3><button class="btn small" onclick="App.admin.openFormBuilder()">New</button></div>
-            <table class="table" id="tblForms"><thead><tr><th>Title</th><th>Fields</th><th></th></tr></thead><tbody></tbody></table>
+            <div class="table-wrap">
+              <table class="table" id="tblForms"><thead><tr><th>Title</th><th>Fields</th><th></th></tr></thead><tbody></tbody></table>
+            </div>
           </div>
 
           <!-- SHOPPERS PANEL -->
           <div id="panelShoppers" class="card">
             <div class="section-title"><h3>Shoppers</h3><button class="btn small" onclick="App.admin.openNewShopper()">Add</button></div>
-            <table class="table" id="tblShoppers">
-              <thead><tr><th>Name</th><th>Email</th><th>Status</th><th></th></tr></thead>
-              <tbody></tbody>
-            </table>
+            <div class="table-wrap">
+              <table class="table" id="tblShoppers">
+                <thead><tr><th>Name</th><th>Email</th><th>Status</th><th></th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
           </div>
 
           <!-- STORES PANEL -->
           <div id="panelStores" class="card hidden">
             <div class="section-title"><h3>Stores</h3><button class="btn small" onclick="App.admin.openNewStore()">Add</button></div>
-            <table class="table" id="tblStores"><thead><tr><th>Name</th><th>City</th><th></th></tr></thead><tbody></tbody></table>
+            <div class="table-wrap">
+              <table class="table" id="tblStores"><thead><tr><th>Name</th><th>City</th><th></th></tr></thead><tbody></tbody></table>
+            </div>
           </div>
         </div>
       </div>
@@ -290,12 +336,16 @@ option{ color:#111; background:#fff; }
       <!-- Bottom sections - more spacing -->
       <div class="card mt-xl">
         <div class="section-title"><h3>Assignments</h3><button class="btn small" onclick="App.admin.openAssignment()">New assignment</button></div>
-        <table class="table" id="tblAssign"><thead><tr><th>Shopper</th><th>Store</th><th>Form</th><th>Window</th><th>Status</th><th></th></tr></thead><tbody></tbody></table>
+        <div class="table-wrap">
+          <table class="table" id="tblAssign"><thead><tr><th>Shopper</th><th>Store</th><th>Form</th><th>Window</th><th>Status</th><th></th></tr></thead><tbody></tbody></table>
+        </div>
       </div>
 
       <div class="card mt-lg">
         <div class="section-title"><h3>Submissions</h3><div class="row" style="gap:8px"><button class="btn small" onclick="App.admin.exportCSV()">Export CSV</button></div></div>
-        <table class="table" id="tblSubm"><thead><tr><th>Visit</th><th>Shopper</th><th>Duration</th><th>Status</th><th></th></tr></thead><tbody></tbody></table>
+        <div class="table-wrap">
+          <table class="table" id="tblSubm"><thead><tr><th>Visit</th><th>Shopper</th><th>Duration</th><th>Status</th><th></th></tr></thead><tbody></tbody></table>
+        </div>
       </div>
     </div>
   </section>
@@ -436,7 +486,7 @@ option{ color:#111; background:#fff; }
 <script>
 // ================= API client (REST direct SQL) =================
 const API = {
-  base: 'https://backend.wedaevents.com/ms-api.php',   // endpoint-ul tău
+  base: 'https://backend.wedaevents.com/ms-api.php',
   token: localStorage.getItem('ms_token') || null,
 
   async call(q, method='GET', body=null, asText=false){
@@ -453,7 +503,7 @@ const API = {
   clearToken(){ this.token=null; localStorage.removeItem('ms_token'); }
 };
 
-// ============= Utils (la fel ca înainte, puțin mai scurt) =============
+// ============= Utils =============
 const U = {
   uid: ()=>'id_'+Math.random().toString(36).slice(2)+Date.now().toString(36),
   fmtDT(ts){ if(!ts) return ''; return new Date(parseInt(ts,10)).toLocaleString(); },
@@ -467,7 +517,7 @@ const App = {
 
   async init(){
     this.bindUI();
-    await this.tryBootstrap(); // dacă există token, trage datele
+    await this.tryBootstrap();
   },
 
   async tryBootstrap(){
@@ -598,7 +648,6 @@ const App = {
     let sub = App.cache.submissions.find(s=>s.assignment_id===a.id && s.shopper_id===a.shopper_id);
 
     if(!sub){
-      // creează submission la server
       const res = await API.call('submissions/upsert','POST',{
         assignmentId:a.id, shopperId:a.shopper_id, storeId:a.store_id, formId:a.form_id
       });
@@ -640,7 +689,6 @@ const App = {
     async saveField(fid, val){
       const s=App.state.curSubmission; if(!s) return;
       await API.call('submissions/update-values','PATCH',{id:s.id, patch:{[fid]:val}});
-      // actualizează local cache minim
       const loc = App.cache.submissions.find(x=>x.id===s.id);
       if(loc){ loc.values = loc.values || {}; loc.values[fid]=val; }
     }
@@ -654,7 +702,6 @@ const App = {
 
   async submitForm(){
     const s=this.state.curSubmission, f=this.state.curForm; if(!s||!f) return;
-    // validări minime: cerem să fie stopat timerul
     if(!s.started_at || !s.stopped_at) return U.toast('Stop the timer before submitting');
     await API.call('submissions/upsert','POST',{id:s.id,status:'submitted',submittedAt:Date.now()});
     await this.reload(); U.toast('Submitted');
@@ -902,7 +949,6 @@ const App = {
     async deleteSubmission(id){ await API.call('submissions/delete','DELETE',{id}); await App.reload(); U.toast('Submission deleted'); },
 
     viewSubmission(id){
-      // (păstrăm viewerul light exact ca înainte)
       const s = App.cache.submissions.find(x=>x.id===id); if(!s) return U.toast('Missing');
       const st= App.cache.stores.find(o=>o.id===s.store_id)||{};
       const f = App.cache.forms.find(o=>o.id===s.form_id)||{fields:[],title:'Form'};
@@ -933,4 +979,3 @@ window.addEventListener('load', ()=>App.init());
 </script>
 </body>
 </html>
-
