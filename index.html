@@ -15,29 +15,38 @@
   --accent1:#7325C5; --accent2:#FF6200; --accent3:#F43C6E;
   --glass:rgba(255,255,255,0.06); --border:rgba(255,255,255,0.12);
   --ok:#2ecc71; --warn:#f1c40f; --danger:#ff4d4d;
-  --radius:16px; --pad:14px;
+  --radius:16px;
 }
 *{box-sizing:border-box}
 html{ -webkit-text-size-adjust:100% }
 html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:"DM Sans",system-ui,-apple-system,Segoe UI,Roboto,Arial}
 body{ overflow-y:auto; -ms-overflow-style:none; scrollbar-width:none; touch-action:pan-x pan-y; overscroll-behavior-y:none }
 body::-webkit-scrollbar{ width:0; height:0 }
-a,button,.tab,.btn,.mi{ -webkit-tap-highlight-color:transparent; -webkit-touch-callout:none; user-select:none; touch-action:manipulation }
-button:focus,.btn:focus,.tab:focus,.mi:focus{ outline:none; box-shadow:0 0 0 2px rgba(255,255,255,.08) inset }
+a,button,.tab,.btn,.navpill{ -webkit-tap-highlight-color:transparent; -webkit-touch-callout:none; user-select:none; touch-action:manipulation }
+button:focus,.btn:focus,.tab:focus,.navpill:focus{ outline:none; box-shadow:0 0 0 2px rgba(255,255,255,.08) inset }
 ::selection{ background:rgba(115,37,197,.35); color:#fff }
 a{color:inherit;text-decoration:none}
 button{font-family:inherit;cursor:pointer}
+
+/* layout */
 .wrapper{max-width:1200px;margin:0 auto;padding:20px 20px calc(20px + env(safe-area-inset-bottom))}
 .wrapper > section{ margin-bottom:28px }
+
+/* header */
 .header{ position:sticky;top:0;z-index:50;background:linear-gradient(180deg, rgba(29,29,31,.96), rgba(29,29,31,.86)); backdrop-filter:blur(10px); border-bottom:1px solid var(--border) }
-.header-inner{ display:flex;gap:12px;align-items:center;justify-content:space-between; padding:12px calc(16px + env(safe-area-inset-right)) 12px calc(16px + env(safe-area-inset-left)) }
-.brand{display:flex;align-items:center;gap:10px}
+.header-inner{ display:flex; align-items:center; gap:12px; padding:12px calc(16px + env(safe-area-inset-right)) 12px calc(16px + env(safe-area-inset-left)) }
+.brand{display:flex;align-items:center;gap:10px; min-width:200px}
 .badge{padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:var(--panel);font-size:12px;color:var(--muted)}
 .title{font-weight:700;letter-spacing:.3px}
-.tabs{display:flex;gap:10px;flex-wrap:wrap}
+.admin-nav{ flex:1; display:flex; justify-content:center; gap:8px; flex-wrap:wrap }
+.navpill{background:var(--panel);border:1px solid var(--border);padding:8px 12px;border-radius:999px;color:var(--muted);font-size:13px}
+.navpill.active{ background:linear-gradient(90deg,var(--accent1),var(--accent3)); color:#fff; border-color:transparent }
+.tabs{display:flex;gap:10px;flex-wrap:wrap; min-width:240px; justify-content:flex-end}
 .tab{background:var(--panel);border:1px solid var(--border);padding:10px 14px;border-radius:999px;color:var(--muted)}
 .tab[disabled]{opacity:.5;pointer-events:none}
 .tab.active{background:linear-gradient(90deg,var(--accent1),var(--accent3));color:white;border-color:transparent}
+
+/* cards / table */
 .btn{background:var(--panel);border:1px solid var(--border);padding:10px 14px;border-radius:12px;color:inherit; transition:transform .06s ease}
 .btn:active{ transform:translateY(1px) scale(.99) }
 .btn.primary{background:linear-gradient(90deg,var(--accent1),var(--accent3));border:none;color:#fff}
@@ -49,16 +58,13 @@ button{font-family:inherit;cursor:pointer}
 .grid{display:grid;gap:20px}
 .grid.two{grid-template-columns:1fr 1fr}
 @media(max-width:960px){.grid.two{grid-template-columns:1fr}}
-.card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--border);border-radius:var(--radius);padding:22px}
+.card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--border);border-radius:16px;padding:22px}
 .section-title{display:flex;align-items:center;justify-content:space-between;margin:6px 0 14px;gap:10px;flex-wrap:wrap}
 .section-title h3{margin:0;font-size:18px}
 .sub{font-size:12px;color:var(--hint)}
 .kv{display:flex;gap:10px;flex-wrap:wrap}
-.kv .pill{font-size:12px;color:var(--muted);border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:var(--glass)}
+.kv .pill{font-size:12px;color:var(--muted);border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.06)}
 .input, select, textarea{ width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:12px;outline:none }
-input,textarea,select{ -webkit-user-select:text; user-select:text }
-input[type=number]{ -moz-appearance:textfield }
-input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0 }
 label{font-size:13px;color:var(--muted);display:block;margin:8px 0 6px}
 .row{display:flex;gap:12px}
 .row>*{flex:1}
@@ -66,32 +72,35 @@ hr.sep{border:none;border-top:1px dashed var(--border);margin:14px 0}
 .table{width:100%;border-collapse:collapse;min-width:600px}
 .table th,.table td{padding:10px;border-bottom:1px solid var(--border);text-align:left;font-size:14px;vertical-align:top}
 .table th{color:var(--muted);font-weight:600}
-.pill-inline{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;margin-left:6px}
 .table-wrap{ width:100%; overflow:auto hidden; -ms-overflow-style:none; scrollbar-width:none }
 .table-wrap::-webkit-scrollbar{ display:none }
+.pill-inline{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;margin-left:6px}
 .user-actions{ padding:8px 0 12px }
 .user-actions .actions{ display:flex; gap:8px; flex-wrap:wrap }
 .user-actions .divider{ margin-top:10px; border-top:1px dashed var(--border) }
-.adminLayout{ display:grid; grid-template-columns: 230px 1fr; gap:20px }
-@media(max-width:960px){ .adminLayout{ grid-template-columns:1fr } }
-.adminMenu{ position:sticky; top:72px; height:fit-content; padding:16px; border-radius:16px; background:linear-gradient(180deg,var(--panel),var(--panel2)); border:1px solid var(--border) }
-.adminMenu .mi{ width:100%; text-align:left; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--panel); color:var(--muted); margin-bottom:10px }
-.adminMenu .mi.active{ background:linear-gradient(90deg,var(--accent1),var(--accent3)); color:#fff; border-color:transparent }
-.mt-lg{ margin-top:26px } .mt-xl{ margin-top:34px }
+
+/* timer */
 #timerOverlay{ position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px) saturate(120%); display:none;align-items:center;justify-content:center;z-index:100 }
 .timer-box{ width:min(520px,90vw);background:linear-gradient(180deg,var(--panel),var(--panel2)); border:1px solid var(--border);border-radius:22px;padding:22px;text-align:center }
 .timer-digits{font-size:48px;font-weight:700;letter-spacing:2px;margin:6px 0 10px}
 .timer-meta{font-size:13px;color:var(--muted);margin-bottom:14px}
+
+/* modals & toast */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:90}
 .modal-card{width:min(680px,92vw);max-height:90vh;overflow:auto;background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--border);border-radius:18px;padding:18px}
 .toast{ position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom));background:#111;border:1px solid var(--border); border-radius:12px;padding:12px 16px;z-index:120;display:none }
+
+/* select open: white bg, black text */
 select:focus, select:active{ background:#fff; color:#111 } option{ color:#111; background:#fff }
+
+/* mobile tweaks */
 @media (max-width: 680px){
   .header-inner{ padding:10px calc(12px + env(safe-area-inset-right)) 10px calc(12px + env(safe-area-inset-left)) }
-  .title{ font-size:14px } .tabs .tab{ padding:8px 10px; font-size:13px }
+  .title{ font-size:14px } .tab{ padding:8px 10px; font-size:13px }
+  .navpill{ padding:6px 10px; font-size:12px }
   .card{ padding:16px } .section-title h3{ font-size:16px } .row{ flex-direction:column } .table{ min-width:520px }
 }
-.hidden{display:none !important} .faded{opacity:.6}
+.hidden{display:none !important}
 .form-section-title{ margin:12px 0 8px; font-weight:700; font-size:14px; color:var(--muted); border-left:3px solid var(--accent1); padding-left:8px }
 </style>
 </head>
@@ -104,6 +113,16 @@ select:focus, select:active{ background:#fff; color:#111 } option{ color:#111; b
       <div class="title">Mystery Shopper Manager</div>
       <div id="roleBadge" class="pill-inline">Guest</div>
     </div>
+
+    <!-- ADMIN NAV (CENTRU) -->
+    <div id="adminNav" class="admin-nav hidden">
+      <button class="navpill active" id="navShoppers"    type="button" onclick="App.admin.switchPanel('shoppers')">Shoppers</button>
+      <button class="navpill"        id="navForms"       type="button" onclick="App.admin.switchPanel('forms')">Forms</button>
+      <button class="navpill"        id="navStores"      type="button" onclick="App.admin.switchPanel('stores')">Stores</button>
+      <button class="navpill"        id="navAssignments" type="button" onclick="App.admin.switchPanel('assignments')">Assignments</button>
+      <button class="navpill"        id="navSubmissions" type="button" onclick="App.admin.switchPanel('submissions')">Submissions</button>
+    </div>
+
     <div class="tabs">
       <button id="tabShopper" class="tab active" type="button">Shopper</button>
       <button id="tabAdmin"   class="tab"          type="button">Admin</button>
@@ -155,7 +174,7 @@ select:focus, select:active{ background:#fff; color:#111 } option{ color:#111; b
       </div>
       <div class="row">
         <div><label>Start location</label><input id="fldGeoStart" class="input" type="text" readonly /></div>
-        <div><label>Stop location</label><input id="fldGeoStop"  class="input" type="text" readonly /></div>
+        <div><label>Stop location</label><input id="fldGeoStop" class="input" type="text" readonly /></div>
       </div>
       <hr class="sep" />
       <div id="dynamicForm"></div>
@@ -179,60 +198,52 @@ select:focus, select:active{ background:#fff; color:#111 } option{ color:#111; b
         </div>
       </div>
 
-      <div class="adminLayout">
-        <aside class="adminMenu">
-          <button class="mi active" id="miShoppers" type="button" onclick="App.admin.switchPanel('shoppers')">Shoppers</button>
-          <button class="mi"        id="miForms"    type="button" onclick="App.admin.switchPanel('forms')">Forms</button>
-          <button class="mi"        id="miStores"   type="button" onclick="App.admin.switchPanel('stores')">Stores</button>
-        </aside>
-
-        <div class="adminContent">
-          <!-- Forms builder inline -->
-          <div id="panelForms" class="card hidden">
-            <div class="section-title">
-              <h3>Forms</h3>
-              <div class="row" style="gap:8px">
-                <button class="btn small" type="button" onclick="App.admin.addSection()">Add section</button>
-                <button class="btn small" type="button" onclick="App.admin.addFieldUI()">Add field</button>
-                <button class="btn ok small" type="button" onclick="App.admin.saveForm()">Save</button>
-              </div>
-            </div>
-            <label>Form title</label>
-            <input id="fbTitle" class="input" placeholder="e.g., Retail Visit v1" />
-            <hr class="sep" />
-            <div id="fbSections"></div>
-            <hr class="sep" />
-            <div id="fbFields"></div>
-            <div class="sub" style="margin-top:10px">Use "Add section" & "Add field", then Save.</div>
-          </div>
-
-          <div id="panelShoppers" class="card">
-            <div class="section-title"><h3>Shoppers</h3><button class="btn small" type="button" onclick="App.admin.openNewShopper()">Add</button></div>
-            <div class="table-wrap">
-              <table class="table" id="tblShoppers"><thead><tr><th>Name</th><th>Email</th><th>Status</th><th></th></tr></thead><tbody></tbody></table>
-            </div>
-          </div>
-
-          <div id="panelStores" class="card hidden">
-            <div class="section-title"><h3>Stores</h3><button class="btn small" type="button" onclick="App.admin.openNewStore()">Add</button></div>
-            <div class="table-wrap">
-              <table class="table" id="tblStores"><thead><tr><th>Name</th><th>City</th><th></th></tr></thead><tbody></tbody></table>
-            </div>
+      <!-- Un singur container cu panouri comutabile -->
+      <div class="grid">
+        <div id="panelShoppers" class="card">
+          <div class="section-title"><h3>Shoppers</h3><button class="btn small" type="button" onclick="App.admin.openNewShopper()">Add</button></div>
+          <div class="table-wrap">
+            <table class="table" id="tblShoppers"><thead><tr><th>Name</th><th>Email</th><th>Status</th><th></th></tr></thead><tbody></tbody></table>
           </div>
         </div>
-      </div>
 
-      <div class="card mt-xl">
-        <div class="section-title"><h3>Assignments</h3><button class="btn small" type="button" onclick="App.admin.openAssignment()">New assignment</button></div>
-        <div class="table-wrap">
-          <table class="table" id="tblAssign"><thead><tr><th>Shopper</th><th>Store</th><th>Form</th><th>Window</th><th>Status</th><th></th></tr></thead><tbody></tbody></table>
+        <div id="panelForms" class="card hidden">
+          <div class="section-title">
+            <h3>Forms</h3>
+            <div class="row" style="gap:8px">
+              <button class="btn small" type="button" onclick="App.admin.addSection()">Add section</button>
+              <button class="btn small" type="button" onclick="App.admin.addFieldUI()">Add field</button>
+              <button class="btn ok small" type="button" onclick="App.admin.saveForm()">Save</button>
+            </div>
+          </div>
+          <label>Form title</label>
+          <input id="fbTitle" class="input" placeholder="e.g., Retail Visit v1" />
+          <hr class="sep" />
+          <div id="fbSections"></div>
+          <hr class="sep" />
+          <div id="fbFields"></div>
+          <div class="sub" style="margin-top:10px">Use "Add section" & "Add field", then Save.</div>
         </div>
-      </div>
 
-      <div class="card mt-lg">
-        <div class="section-title"><h3>Submissions</h3><div class="row" style="gap:8px"><button class="btn small" type="button" onclick="App.admin.exportCSV?.()">Export CSV</button></div></div>
-        <div class="table-wrap">
-          <table class="table" id="tblSubm"><thead><tr><th>Visit</th><th>Shopper</th><th>Duration</th><th>Status</th><th></th></tr></thead><tbody></tbody></table>
+        <div id="panelStores" class="card hidden">
+          <div class="section-title"><h3>Stores</h3><button class="btn small" type="button" onclick="App.admin.openNewStore()">Add</button></div>
+          <div class="table-wrap">
+            <table class="table" id="tblStores"><thead><tr><th>Name</th><th>City</th><th></th></tr></thead><tbody></tbody></table>
+          </div>
+        </div>
+
+        <div id="panelAssignments" class="card hidden">
+          <div class="section-title"><h3>Assignments</h3><button class="btn small" type="button" onclick="App.admin.openAssignment()">New assignment</button></div>
+          <div class="table-wrap">
+            <table class="table" id="tblAssign"><thead><tr><th>Shopper</th><th>Store</th><th>Form</th><th>Window</th><th>Status</th><th></th></tr></thead><tbody></tbody></table>
+          </div>
+        </div>
+
+        <div id="panelSubmissions" class="card hidden">
+          <div class="section-title"><h3>Submissions</h3><div class="row" style="gap:8px"><button class="btn small" type="button" onclick="App.admin.exportCSV?.()">Export CSV</button></div></div>
+          <div class="table-wrap">
+            <table class="table" id="tblSubm"><thead><tr><th>Visit</th><th>Shopper</th><th>Duration</th><th>Status</th><th></th></tr></thead><tbody></tbody></table>
+          </div>
         </div>
       </div>
     </div>
@@ -317,7 +328,7 @@ select:focus, select:active{ background:#fff; color:#111 } option{ color:#111; b
 <div class="toast" id="toast"></div>
 
 <script>
-/* ================= API ================= */
+/* ============== API ============== */
 const API = {
   base: 'https://backend.wedaevents.com/ms-api.php',
   token: localStorage.getItem('ms_token') || null,
@@ -335,7 +346,7 @@ const API = {
   clearToken(){ this.token=null; localStorage.removeItem('ms_token'); }
 };
 
-/* ================= Utils ================= */
+/* ============== Utils ============== */
 const U = {
   uid:()=>('id_'+Math.random().toString(36).slice(2)+Date.now().toString(36)),
   fmtDT(ts){ if(!ts) return ''; const n=parseInt(ts,10); return isNaN(n)?'':new Date(n).toLocaleString(); },
@@ -344,7 +355,7 @@ const U = {
   toast(msg,ms=2000){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',ms) }
 };
 
-/* ================= App ================= */
+/* ============== App ============== */
 const App = {
   state:{ me:null, role:'Guest', timer:{running:false,start:0,interval:null}, curAssign:null, curForm:null, curSubmission:null },
   cache:{ users:[], stores:[], forms:[], assignments:[], submissions:[] },
@@ -362,12 +373,14 @@ const App = {
       this.refreshTasks();
     }catch(e){
       this.ui.updateAuthTabs(); // guest
-      this.ui.showAuth(true);   // arată login-ul dacă nu e token valid
+      this.ui.showAuth(true);   // show login if token invalid
     }
   },
   ingest(boot){
     this.state.me=boot.me; this.ui.updateAuthTabs(); this.ui.setRole(this.state.me?.role||'Guest');
     this.cache={ users:boot.users||[], stores:boot.stores||[], forms:boot.forms||[], assignments:boot.assignments||[], submissions:boot.submissions||[] };
+    // admin menu visible only for admins
+    document.getElementById('adminNav').classList.toggle('hidden', !(this.state.me && this.state.me.role==='Admin'));
   },
 
   async softRefresh(){
@@ -408,12 +421,14 @@ const App = {
       s('viewAdmin').classList.toggle('hidden', which!=='admin');
       document.getElementById('tabShopper').classList.toggle('active', which==='shopper');
       document.getElementById('tabAdmin').classList.toggle('active', which==='admin');
+      // Admin-nav visible only on admin view + admin role
+      const showAdminNav = (which==='admin') && (App.state.me && App.state.me.role==='Admin');
+      document.getElementById('adminNav').classList.toggle('hidden', !showAdminNav);
     },
     setRole(r){
       App.state.role=r||'Guest';
       const b=document.getElementById('roleBadge');
       b.textContent=r||'Guest';
-      b.className='pill-inline '+(r==='Admin'?'badge-ok':r==='Shopper'?'badge-warn':'');
     },
     updateAuthTabs(){
       const me=App.state.me;
@@ -504,12 +519,10 @@ const App = {
     const store=App.cache.stores.find(s=>s.id===a.store_id)||{};
     const form =App.cache.forms.find(f=>f.id===a.form_id)||{fields:[],title:'Form'};
     let sub=App.cache.submissions.find(s=>s.assignment_id===a.id && s.shopper_id===a.shopper_id);
-
     if(!sub){
       const r=await API.call('submissions/upsert','POST',{assignmentId:a.id,shopperId:a.shopper_id,storeId:a.store_id,formId:a.form_id});
       await this.softRefresh(); sub=this.cache.submissions.find(s=>s.id===r.id);
     }
-
     this.state.curAssign=a; this.state.curForm=form; this.state.curSubmission=sub;
 
     document.getElementById('visitCard').classList.remove('hidden');
@@ -533,7 +546,6 @@ const App = {
       const firstId=sections[0].id;
       sectionsToRender=sections.map(s=>({...s, fields:(form.fields||[]).filter(f=>(f.sectionId||firstId)===s.id)}));
     }
-
     sectionsToRender.forEach(sec=>{
       if(sec.title){ const h=document.createElement('div'); h.className='form-section-title'; h.textContent=sec.title; host.appendChild(h); }
       const fieldsIn=sec.fields && sec.fields.length ? sec.fields : (form.fields||[]).filter(ff=>(ff.sectionId||null)===(sec.id||null));
@@ -583,7 +595,7 @@ const App = {
         document.getElementById('timerDigits').textContent=U.fmtDuration(secs);
         document.getElementById('timerMeta').textContent='Started at '+U.fmtDT(App.state.timer.start);
       },250);
-      await App.softRefresh(); // refresh subtil după start
+      await App.softRefresh(); // refresh after start
     },
     async stop(){
       const s=App.state.curSubmission; if(!s||!App.state.timer.running) return;
@@ -606,10 +618,22 @@ const App = {
     selectedPanel:'shoppers',
     switchPanel(which){
       this.selectedPanel=which;
-      ['forms','shoppers','stores'].forEach(p=>{
-        document.getElementById('panel'+p.charAt(0).toUpperCase()+p.slice(1)).classList.toggle('hidden', p!==which);
-        document.getElementById('mi'+p.charAt(0).toUpperCase()+p.slice(1)).classList.toggle('active', p===which);
+      // active pills
+      ['Shoppers','Forms','Stores','Assignments','Submissions'].forEach(k=>{
+        document.getElementById('nav'+k).classList.toggle('active', k.toLowerCase()===which);
       });
+      // show panels
+      const map={
+        shoppers:'panelShoppers',
+        forms:'panelForms',
+        stores:'panelStores',
+        assignments:'panelAssignments',
+        submissions:'panelSubmissions'
+      };
+      Object.values(map).forEach(id=>document.getElementById(id).classList.add('hidden'));
+      document.getElementById(map[which]).classList.remove('hidden');
+
+      // small UX: dacă intrăm pe Forms fără să fie selectat, deschidem builder-ul pe primul form
       if(which==='forms'){ App.admin.openFormBuilder(App.cache.forms[0]?.id||null); }
     },
 
@@ -677,7 +701,7 @@ const App = {
       }
     },
 
-    /* ---- FORM BUILDER (inline) ---- */
+    /* ---- FORM BUILDER ---- */
     _editingFormId:null, _fbForm:{id:null,title:'',sections:[],fields:[]},
 
     openFormBuilder(id=null){
@@ -693,7 +717,6 @@ const App = {
       }
       document.getElementById('fbTitle').value=this._fbForm.title||'';
       this.renderFBSections(); this.renderFBFields();
-      this.switchPanel('forms');
     },
     renderFBSections(){
       const host=document.getElementById('fbSections'); host.innerHTML='';
@@ -772,14 +795,13 @@ const App = {
       await API.call('forms/save','POST',payload); await App.softRefresh(); U.toast('Form saved');
     },
 
-    /* stores & users & assignments (CRUD scurt) */
+    /* CRUD scurt (placeholder pt. modale dedicate) */
     openNewShopper(){ U.toast('Add shopper modal not included in short build') },
     async userSetStatus(id,status){ await API.call('users/update','PATCH',{id,status}); await App.softRefresh(); U.toast('User '+status) },
     async deleteUser(id){ await API.call('users/delete','DELETE',{id}); await App.softRefresh(); U.toast('User deleted') },
 
     openNewStore(){ U.toast('New store modal not included in short build') },
     editStore(_){ U.toast('Edit store modal not included in short build') },
-    async saveNewStore(){},
     async deleteStore(id){ await API.call('stores/delete','DELETE',{id}); await App.softRefresh(); U.toast('Store deleted') },
 
     openAssignment(){ U.toast('Assignment modal not included in short build') },
