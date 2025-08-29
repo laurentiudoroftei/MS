@@ -187,6 +187,7 @@ select:focus, select:active{ background:#fff; color:#111 } option{ color:#111; b
         </aside>
 
         <div class="adminContent">
+          <!-- Forms builder inline -->
           <div id="panelForms" class="card hidden">
             <div class="section-title">
               <h3>Forms</h3>
@@ -194,10 +195,8 @@ select:focus, select:active{ background:#fff; color:#111 } option{ color:#111; b
                 <button class="btn small" type="button" onclick="App.admin.addSection()">Add section</button>
                 <button class="btn small" type="button" onclick="App.admin.addFieldUI()">Add field</button>
                 <button class="btn ok small" type="button" onclick="App.admin.saveForm()">Save</button>
-                <button class="btn small" type="button" onclick="App.ui.closeModal('formModal')">Close</button>
               </div>
             </div>
-            <!-- Builder inline: Title + sections + fields -->
             <label>Form title</label>
             <input id="fbTitle" class="input" placeholder="e.g., Retail Visit v1" />
             <hr class="sep" />
@@ -251,10 +250,69 @@ select:focus, select:active{ background:#fff; color:#111 } option{ color:#111; b
   </div>
 </div>
 
-<!-- SIMPLE MODALS reused (Shopper/Admin) -->
-<div id="shopperModal" class="modal"><div class="modal-card"></div></div>
-<div id="storeModal" class="modal"><div class="modal-card"></div></div>
-<div id="assignModal" class="modal"><div class="modal-card"></div></div>
+<!-- AUTH MODAL -->
+<div id="authModal" class="modal">
+  <div class="modal-card">
+    <div class="section-title">
+      <h3>Sign in</h3>
+      <div class="row" style="gap:8px">
+        <button class="btn small" type="button" onclick="App.ui.hideAuth()">Close</button>
+      </div>
+    </div>
+    <div class="row">
+      <div><label>Email / Username</label><input id="loginUser" class="input" placeholder="you@domain.com" /></div>
+      <div><label>Password</label><input id="loginPass" type="password" class="input" placeholder="••••••••" /></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn primary" type="button" onclick="App.auth.login()">Login</button>
+      <button class="btn" type="button" onclick="App.auth.toggleRegister(true)">Create account</button>
+    </div>
+    <hr class="sep" />
+    <div id="registerBox" class="hidden">
+      <div class="row">
+        <div><label>Full name</label><input id="regName" class="input" placeholder="Your name" /></div>
+        <div><label>Email</label><input id="regEmail" class="input" placeholder="you@domain.com" /></div>
+      </div>
+      <div class="row">
+        <div><label>Password</label><input id="regPass1" type="password" class="input" /></div>
+        <div><label>Confirm</label><input id="regPass2" type="password" class="input" /></div>
+      </div>
+      <div class="sub">Account will be created as <b>Shopper</b> with status <b>Pending</b>. Admin approval required.</div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn ok" type="button" onclick="App.auth.register()">Register</button>
+        <button class="btn" type="button" onclick="App.auth.toggleRegister(false)">Cancel</button>
+      </div>
+    </div>
+    <div id="seedInfo" class="sub" style="margin-top:10px">Seed: admin@example.com / admin</div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div id="profileModal" class="modal">
+  <div class="modal-card">
+    <div class="section-title">
+      <h3>My Profile</h3>
+      <div class="row" style="gap:8px">
+        <button class="btn ok small" type="button" onclick="App.profile.save()">Save</button>
+        <button class="btn small" type="button" onclick="App.ui.closeModal('profileModal')">Close</button>
+      </div>
+    </div>
+    <div class="row">
+      <div><label>Name</label><input id="pfName" class="input" /></div>
+      <div><label>Email</label><input id="pfEmail" class="input" /></div>
+    </div>
+    <hr class="sep" />
+    <div class="row">
+      <div><label>Current password</label><input id="pfCurPass" type="password" class="input" placeholder="required to change password" /></div>
+      <div><label>New password</label><input id="pfNewPass1" type="password" class="input" /></div>
+    </div>
+    <div class="row">
+      <div><label>Confirm new password</label><input id="pfNewPass2" type="password" class="input" /></div>
+      <div><label>Role</label><input id="pfRole" class="input" readonly /></div>
+    </div>
+    <div class="sub">Leave password fields empty if you don't want to change it.</div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -302,7 +360,10 @@ const App = {
       this.ui.showView(this.state.me?.role==='Admin'?'admin':'shopper');
       this.admin.loadAll();
       this.refreshTasks();
-    }catch(e){ this.ui.updateAuthTabs(); }
+    }catch(e){
+      this.ui.updateAuthTabs(); // guest
+      this.ui.showAuth(true);   // arată login-ul dacă nu e token valid
+    }
   },
   ingest(boot){
     this.state.me=boot.me; this.ui.updateAuthTabs(); this.ui.setRole(this.state.me?.role||'Guest');
@@ -334,8 +395,8 @@ const App = {
     const $=sel=>document.querySelector(sel);
     $('#tabShopper').onclick = ()=>this.ui.showView('shopper');
     $('#tabAdmin').onclick   = ()=>this.ui.showView('admin');
-    $('#tabAuth').onclick    = ()=>this.ui.showAuth();
-    $('#tabProfile').onclick = ()=>U.toast('Profile modal moved out for simplu build');
+    $('#tabAuth').onclick    = ()=>this.ui.showAuth(true);
+    $('#tabProfile').onclick = ()=>this.profile.open();
     $('#tabLogout').onclick  = ()=>this.auth.logout();
   },
 
@@ -361,12 +422,63 @@ const App = {
       const a=document.getElementById('tabAdmin');
       a.classList.toggle('hidden',!(me&&me.role==='Admin')); a.toggleAttribute('disabled',!(me&&me.role==='Admin'));
     },
-    showAuth(){ U.toast('Use your credential for login or create new account'); }
+    showAuth(open=true){ document.getElementById('authModal').style.display=open?'flex':'none'; },
+    hideAuth(){ this.showAuth(false); },
+    openModal(id){ document.getElementById(id).style.display='flex'; },
+    closeModal(id){ document.getElementById(id).style.display='none'; }
   },
 
   /* ===== Auth ===== */
   auth:{
-    async logout(){ API.clearToken(); App.state.me=null; App.ui.updateAuthTabs(); App.ui.showView('shopper'); U.toast('Logged out') }
+    async login(){
+      const user=document.getElementById('loginUser').value.trim();
+      const pass=document.getElementById('loginPass').value;
+      if(!user||!pass) return U.toast('Complete credentials');
+      try{
+        const j=await API.call('auth/login','POST',{user,pass});
+        API.setToken(j.token); App.state.me=j.user;
+        App.ui.hideAuth(); await App.softRefresh(); U.toast('Logged in');
+        App.ui.showView(App.state.me.role==='Admin'?'admin':'shopper');
+      }catch(e){ U.toast(e.message); }
+    },
+    toggleRegister(on){ document.getElementById('registerBox').classList.toggle('hidden', !on); },
+    async register(){
+      const name=document.getElementById('regName').value.trim();
+      const email=document.getElementById('regEmail').value.trim();
+      const pass1=document.getElementById('regPass1').value, pass2=document.getElementById('regPass2').value;
+      if(!name||!email||!pass1||pass1!==pass2) return U.toast('Complete form correctly');
+      try{
+        await API.call('auth/register','POST',{name,email,pass:pass1});
+        U.toast('Account created. Await admin approval.');
+        App.auth.toggleRegister(false);
+      }catch(e){ U.toast(e.message); }
+    },
+    async logout(){
+      API.clearToken(); App.state.me=null; App.ui.updateAuthTabs(); App.ui.showView('shopper'); U.toast('Logged out');
+      App.ui.showAuth(true);
+    }
+  },
+
+  /* ===== Profile ===== */
+  profile:{
+    open(){ if(!App.state.me) return U.toast('Login first');
+      document.getElementById('pfName').value=App.state.me.name||'';
+      document.getElementById('pfEmail').value=App.state.me.email||'';
+      document.getElementById('pfRole').value=App.state.me.role||'';
+      document.getElementById('pfCurPass').value=''; document.getElementById('pfNewPass1').value=''; document.getElementById('pfNewPass2').value='';
+      App.ui.openModal('profileModal');
+    },
+    async save(){
+      const name=document.getElementById('pfName').value.trim();
+      const email=document.getElementById('pfEmail').value.trim();
+      const cur=document.getElementById('pfCurPass').value;
+      const n1=document.getElementById('pfNewPass1').value, n2=document.getElementById('pfNewPass2').value;
+      if(n1||n2){ if(n1!==n2) return U.toast('Passwords mismatch'); }
+      try{
+        await API.call('me/update','PATCH',{name,email,curPass:cur,newPass:n1||''});
+        await App.softRefresh(); App.ui.closeModal('profileModal'); U.toast('Profile updated');
+      }catch(e){ U.toast(e.message); }
+    }
   },
 
   /* ===== Shopper view ===== */
@@ -565,7 +677,7 @@ const App = {
       }
     },
 
-    /* ---- minimal forms builder (inline) ---- */
+    /* ---- FORM BUILDER (inline) ---- */
     _editingFormId:null, _fbForm:{id:null,title:'',sections:[],fields:[]},
 
     openFormBuilder(id=null){
@@ -678,7 +790,7 @@ const App = {
 
     viewSubmission(id){
       const s=App.cache.submissions.find(x=>x.id===id); if(!s) return U.toast('Missing');
-      const st=App.cache.stores.find(o=>o.id===s.store_id)||{}, f=App.cache.forms.find(o=>o.id===s.form_id)||{fields:[],title:'Form'}, sh=App.cache.users.find(o=>o.id===s.shopper_id)||{};
+      const st=App.cache.stores.find(o=>o.id===s.store_id)||{}; const f=App.cache.forms.find(o=>o.id===s.form_id)||{fields:[],title:'Form'}; const sh=App.cache.users.find(o=>o.id===s.shopper_id)||{};
       const esc=v=>(v==null?'':String(v).replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])));
       const nl2br=v=>esc(v).replace(/\n/g,'<br>');
       const star=n=>{ const v=Math.max(1,Math.min(5,parseInt(n||0,10)||0)); return `<span style="font-size:16px">${'★'.repeat(v)}${'☆'.repeat(5-v)}</span><span style="margin-left:6px;font-size:12px;color:#666">${v}/5</span>`; };
