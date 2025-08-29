@@ -326,7 +326,7 @@ select:focus, select:active{ background:#fff; color:#111 } option{ color:#111; b
         <button class="btn" type="button" onclick="App.auth.toggleRegister(false)">Cancel</button>
       </div>
     </div>
-    <div id="seedInfo" class="sub" style="margin-top:10px">Seed: admin@example.com / admin</div>
+    <div id="seedInfo" class="sub" style="margin-top:10px">User your credentials for login or create new account.</div>
   </div>
 </div>
 
@@ -1029,28 +1029,115 @@ const App = {
     async deleteSubmission(id){ if(!confirm('Delete submission?')) return; await API.call('submissions/delete','DELETE',{id}); await App.softRefresh(); U.toast('Submission deleted') },
 
     /* printable view */
-    viewSubmission(id){
-      const s=App.cache.submissions.find(x=>x.id===id); if(!s) return U.toast('Missing');
-      const st=App.cache.stores.find(o=>o.id===s.store_id)||{}; const f=App.cache.forms.find(o=>o.id===s.form_id)||{fields:[],title:'Form'}; const sh=App.cache.users.find(o=>o.id===s.shopper_id)||{};
-      const esc=v=>(v==null?'':String(v).replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])));
-      const nl2br=v=>esc(v).replace(/\n/g,'<br>');
-      const star=n=>{ const v=Math.max(1,Math.min(5,parseInt(n||0,10)||0)); return `<span style="font-size:16px">${'★'.repeat(v)}${'☆'.repeat(5-v)}</span><span style="margin-left:6px;font-size:12px;color:#666">${v}/5</span>`; };
-      const valueFor=(fld,val)=> val==null||val===''?'<span style="color:#999">–</span>':(fld.type==='textarea'?nl2br(val):fld.type==='rating'?star(val):esc(val));
-      const rows=(f.fields||[]).map(fl=>`<tr><th>${esc(fl.label)}</th><td>${valueFor(fl,(s.values||{})[fl.id])}</td></tr>`).join('')||`<tr><td colspan="2" style="color:#777;padding:12px 0">No fields</td></tr>`;
-      const doc=window.open('','_blank');
-      doc.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Submission ${esc(s.id)}</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-<style>:root{--ink:#111;--muted:#6b7280;--paper:#FAFAFC;--line:#e5e7eb;--card:#fff}*{box-sizing:border-box}html,body{margin:0;background:var(--paper);color:var(--ink);font-family:"DM Sans",system-ui,-apple-system,Segoe UI,Roboto,Arial}.container{max-width:900px;margin:0 auto;padding:28px 20px 60px}.doc{background:var(--card);border:1px solid var(--line);border-radius:14px}.head{padding:22px 22px 10px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}.logo{width:34px;height:34px;border-radius:10px;background:#111;color:#fff;display:grid;place-items:center;font-weight:700}.chips{display:flex;gap:8px;flex-wrap:wrap}.chip{padding:3px 8px;border:1px solid var(--line);border-radius:999px;font-size:12px;color:#374151;background:#fff}.meta{padding:14px 22px 8px;display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:800px){.meta{grid-template-columns:1fr}}.toolbar{padding:10px 22px;display:flex;gap:8px;border-bottom:1px solid var(--line)}.btn{border:1px solid var(--line);background:#fff;padding:8px 12px;border-radius:10px;cursor:pointer;font-size:13px}.btn.primary{background:#111;color:#fff;border-color:#111}.content{padding:16px 22px 26px}table{width:100%;border-collapse:collapse}th,td{text-align:left;vertical-align:top;padding:10px 8px;border-bottom:1px solid var(--line)}th{width:28%;color:#374151;font-weight:600}.foot{padding:14px 22px;border-top:1px solid var(--line);color:#6b7280;font-size:12px}@media print{.toolbar{display:none}body{background:#fff}.doc{box-shadow:none}}</style></head><body>
-<div class="container"><div class="doc">
-<div class="head"><div style="display:flex;gap:10px;align-items:center"><div class="logo">MS</div><div><h1 style="font-size:18px;margin:0">Submission <span style="color:#6b7280">#${esc(s.id)}</span></h1>
-<div class="chips"><span class="chip"><b>Form:</b> ${esc(f.title)}</span><span class="chip"><b>Store:</b> ${esc(st.name||'')}</span><span class="chip"><b>Shopper:</b> ${esc(sh.name||'')}</span><span class="chip">${esc(s.status||'')}</span></div></div></div>
-<div style="color:#6b7280">Generated: ${esc(new Date().toLocaleString())}</div></div>
-<div class="meta"><div><b>Started:</b> ${esc(U.fmtDT(s.started_at))}</div><div><b>Stopped:</b> ${esc(U.fmtDT(s.stopped_at))}</div><div><b>Duration:</b> ${esc(U.fmtDuration(s.duration_sec||0))}</div><div><b>Geo:</b> ${esc(s.geo_start||'–')} → ${esc(s.geo_stop||'–')}</div></div>
-<div class="toolbar"><button class="btn primary" onclick="window.print()">Print</button><button class="btn" onclick="window.close()">Close</button></div>
-<div class="content"><table>${rows}</table></div>
-<div class="foot">Stored in MySQL (live API).</div></div></div>
-<script>(function(){})();<\/script></body></html>`); doc.document.close();
-    },
+	viewSubmission(id){
+	  const s = App.cache.submissions.find(x=>x.id===id); if(!s) return U.toast('Missing');
+	  const st = App.cache.stores.find(o=>o.id===s.store_id)||{};
+	  const f  = App.cache.forms.find(o=>o.id===s.form_id)||{fields:[],title:'Form'};
+	  const sh = App.cache.users.find(o=>o.id===s.shopper_id)||{};
+
+	  const esc=v=>(v==null?'':String(v).replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])));
+	  const nl2br=v=>esc(v).replace(/\n/g,'<br>');
+	  const star=n=>{
+		const v=Math.max(1,Math.min(5,parseInt(n||0,10)||0));
+		return `<span style="font-size:16px">${'★'.repeat(v)}${'☆'.repeat(5-v)}</span><span style="margin-left:6px;font-size:12px;color:#666">${v}/5</span>`;
+	  };
+	  const valueFor=(fld,val)=> val==null||val===''
+		? '<span style="color:#999">–</span>'
+		: (fld.type==='textarea' ? nl2br(val) : (fld.type==='rating' ? star(val) : esc(val)));
+
+	  // ---------- build rows grouped pe sections ----------
+	  const fields = f.fields||[];
+	  const sections = (f.sections||[]).slice().sort((a,b)=>(a.ord??0)-(b.ord??0));
+	  const bySectionId = (secId)=> fields.filter(fd => (fd.sectionId||null) === (secId||null));
+
+	  let rows = '';
+
+	  if (sections.length){
+		sections.forEach(sec=>{
+		  const inSec = bySectionId(sec.id);
+		  if (!inSec.length) return; // sari secțiuni goale
+		  rows += `<tr class="sec"><th colspan="2">${esc(sec.title||'Section')}</th></tr>`;
+		  inSec.forEach(fl=>{
+			rows += `<tr><th>${esc(fl.label)}</th><td>${valueFor(fl,(s.values||{})[fl.id])}</td></tr>`;
+		  });
+		});
+		// câmpuri rămase fără section => "Other"
+		const secIds=new Set(sections.map(x=>x.id));
+		const other = fields.filter(fd=>!secIds.has(fd.sectionId));
+		if(other.length){
+		  rows += `<tr class="sec"><th colspan="2">Other</th></tr>`;
+		  other.forEach(fl=>{
+			rows += `<tr><th>${esc(fl.label)}</th><td>${valueFor(fl,(s.values||{})[fl.id])}</td></tr>`;
+		  });
+		}
+	  } else {
+		// fallback – fără sections
+		rows = fields.map(fl=>`<tr><th>${esc(fl.label)}</th><td>${valueFor(fl,(s.values||{})[fl.id])}</td></tr>`).join('');
+		if(!rows) rows = `<tr><td colspan="2" style="color:#777;padding:12px 0">No fields</td></tr>`;
+	  }
+
+	  const doc=window.open('','_blank');
+	  doc.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Submission ${esc(s.id)}</title>
+	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+	<style>
+	:root{--ink:#111;--muted:#6b7280;--paper:#FAFAFC;--line:#e5e7eb;--card:#fff}
+	*{box-sizing:border-box}html,body{margin:0;background:var(--paper);color:var(--ink);font-family:"DM Sans",system-ui,-apple-system,Segoe UI,Roboto,Arial}
+	.container{max-width:900px;margin:0 auto;padding:28px 20px 60px}
+	.doc{background:var(--card);border:1px solid var(--line);border-radius:14px}
+	.head{padding:22px 22px 10px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+	.logo{width:34px;height:34px;border-radius:10px;background:#111;color:#fff;display:grid;place-items:center;font-weight:700}
+	.chips{display:flex;gap:8px;flex-wrap:wrap}.chip{padding:3px 8px;border:1px solid var(--line);border-radius:999px;font-size:12px;color:#374151;background:#fff}
+	.meta{padding:14px 22px 8px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+	@media(max-width:800px){.meta{grid-template-columns:1fr}}
+	.toolbar{padding:10px 22px;display:flex;gap:8px;border-bottom:1px solid var(--line)}
+	.btn{border:1px solid var(--line);background:#fff;padding:8px 12px;border-radius:10px;cursor:pointer;font-size:13px}
+	.btn.primary{background:#111;color:#fff;border-color:#111}
+	.content{padding:16px 22px 26px}
+	table{width:100%;border-collapse:collapse}th,td{text-align:left;vertical-align:top;padding:10px 8px;border-bottom:1px solid var(--line)}
+	th{width:28%;color:#374151;font-weight:600}
+	tr.sec th{background:#f3f4f6;border-bottom-color:#e5e7eb;color:#374151;text-transform:uppercase;letter-spacing:.04em;font-size:11px;padding-top:14px}
+	.foot{padding:14px 22px;border-top:1px solid var(--line);color:#6b7280;font-size:12px}
+	@media print{.toolbar{display:none}body{background:#fff}.doc{box-shadow:none}}
+	</style></head><body>
+	<div class="container"><div class="doc">
+	  <div class="head">
+		<div style="display:flex;gap:10px;align-items:center">
+		  <div class="logo">MS</div>
+		  <div>
+			<h1 style="font-size:18px;margin:0">Submission <span style="color:#6b7280">#${esc(s.id)}</span></h1>
+			<div class="chips">
+			  <span class="chip"><b>Form:</b> ${esc(f.title)}</span>
+			  <span class="chip"><b>Store:</b> ${esc(st.name||'')}</span>
+			  <span class="chip"><b>Shopper:</b> ${esc(sh.name||'')}</span>
+			  <span class="chip">${esc(s.status||'')}</span>
+			</div>
+		  </div>
+		</div>
+		<div style="color:#6b7280">Generated: ${esc(new Date().toLocaleString())}</div>
+	  </div>
+
+	  <div class="meta">
+		<div><b>Started:</b> ${esc(U.fmtDT(s.started_at))}</div>
+		<div><b>Stopped:</b> ${esc(U.fmtDT(s.stopped_at))}</div>
+		<div><b>Duration:</b> ${esc(U.fmtDuration(s.duration_sec||0))}</div>
+		<div><b>Geo:</b> ${esc(s.geo_start||'–')} → ${esc(s.geo_stop||'–')}</div>
+	  </div>
+
+	  <div class="toolbar">
+		<button class="btn primary" onclick="window.print()">Print</button>
+		<button class="btn" onclick="window.close()">Close</button>
+	  </div>
+
+	  <div class="content">
+		<table>${rows}</table>
+	  </div>
+
+	  <div class="foot">Stored in MySQL (live API).</div>
+	</div></div>
+	<script>(function(){})();<\/script>
+	</body></html>`);
+	  doc.document.close();
+	},
 
     /* ===== MISC ===== */
     async factoryReset(){ if(!confirm('Erase ALL data?')) return; await API.call('factory/reset','POST'); await App.softRefresh(); U.toast('Factory reset complete') }
