@@ -563,7 +563,7 @@ const App = {
     },
     showAuth(open=true){
       document.getElementById('authModal').style.display = open?'flex':'none';
-      document.getElementById('seedInfo').textContent = "Use your credentials to login or submmit for new account";
+      document.getElementById('seedInfo').textContent = "Use your credentials for login or create new account";
     },
     hideAuth(){ App.ui.showAuth(false); },
     openModal(id){ document.getElementById(id).style.display='flex'; },
@@ -1305,4 +1305,5 @@ window.addEventListener('load', ()=>App.init());
 </script>
 </body>
 </html>
+
 
