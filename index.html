@@ -87,7 +87,7 @@ hr.sep{border:none;border-top:1px dashed var(--border);margin:14px 0}
 
 /* modals & toast */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:90}
-.modal-card{width:min(680px,92vw);max-height:90vh;overflow:auto;background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--border);border-radius:18px;padding:18px}
+.modal-card{width:min(760px,92vw);max-height:90vh;overflow:auto;background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--border);border-radius:18px;padding:18px}
 .toast{ position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom));background:#111;border:1px solid var(--border); border-radius:12px;padding:12px 16px;z-index:120;display:none }
 
 /* select open: white bg, black text */
@@ -192,55 +192,87 @@ select:focus, select:active{ background:#fff; color:#111 } option{ color:#111; b
         <h3>Admin Dashboard</h3>
         <div class="row" style="gap:8px">
           <button class="btn small"  type="button" onclick="App.admin.loadAll()">Refresh</button>
-          <button class="btn small"  type="button" onclick="App.admin.backup?.()">Backup JSON</button>
-          <button class="btn small"  type="button" onclick="App.admin.restore?.()">Restore JSON</button>
           <button class="btn danger small" type="button" onclick="App.admin.factoryReset?.()">Factory Reset</button>
         </div>
       </div>
 
-      <!-- Un singur container cu panouri comutabile -->
+      <!-- Panels comutabile -->
       <div class="grid">
+
+        <!-- Shoppers -->
         <div id="panelShoppers" class="card">
-          <div class="section-title"><h3>Shoppers</h3><button class="btn small" type="button" onclick="App.admin.openNewShopper()">Add</button></div>
+          <div class="section-title">
+            <h3>Shoppers</h3>
+            <div class="row" style="gap:8px">
+              <input id="imp_users" type="file" accept=".csv" class="hidden" />
+              <button class="btn small" type="button" onclick="document.getElementById('imp_users').click()">Import CSV</button>
+              <button class="btn small" type="button" onclick="App.admin.exportCSV('users')">Export CSV</button>
+              <button class="btn ok small" type="button" onclick="App.admin.openNewShopper()">Add</button>
+            </div>
+          </div>
           <div class="table-wrap">
             <table class="table" id="tblShoppers"><thead><tr><th>Name</th><th>Email</th><th>Status</th><th></th></tr></thead><tbody></tbody></table>
           </div>
         </div>
 
+        <!-- Forms (list) -->
         <div id="panelForms" class="card hidden">
           <div class="section-title">
             <h3>Forms</h3>
             <div class="row" style="gap:8px">
-              <button class="btn small" type="button" onclick="App.admin.addSection()">Add section</button>
-              <button class="btn small" type="button" onclick="App.admin.addFieldUI()">Add field</button>
-              <button class="btn ok small" type="button" onclick="App.admin.saveForm()">Save</button>
+              <input id="imp_forms" type="file" accept=".csv" class="hidden" />
+              <button class="btn small" type="button" onclick="document.getElementById('imp_forms').click()">Import CSV</button>
+              <button class="btn small" type="button" onclick="App.admin.exportCSV('forms')">Export CSV</button>
+              <button class="btn ok small" type="button" onclick="App.admin.openFormBuilder(null)">Add</button>
             </div>
           </div>
-          <label>Form title</label>
-          <input id="fbTitle" class="input" placeholder="e.g., Retail Visit v1" />
-          <hr class="sep" />
-          <div id="fbSections"></div>
-          <hr class="sep" />
-          <div id="fbFields"></div>
-          <div class="sub" style="margin-top:10px">Use "Add section" & "Add field", then Save.</div>
+          <div class="table-wrap">
+            <table class="table" id="tblForms"><thead><tr><th>Title</th><th>Sections</th><th>Fields</th><th></th></tr></thead><tbody></tbody></table>
+          </div>
         </div>
 
+        <!-- Stores -->
         <div id="panelStores" class="card hidden">
-          <div class="section-title"><h3>Stores</h3><button class="btn small" type="button" onclick="App.admin.openNewStore()">Add</button></div>
+          <div class="section-title">
+            <h3>Stores</h3>
+            <div class="row" style="gap:8px">
+              <input id="imp_stores" type="file" accept=".csv" class="hidden" />
+              <button class="btn small" type="button" onclick="document.getElementById('imp_stores').click()">Import CSV</button>
+              <button class="btn small" type="button" onclick="App.admin.exportCSV('stores')">Export CSV</button>
+              <button class="btn ok small" type="button" onclick="App.admin.openNewStore()">Add</button>
+            </div>
+          </div>
           <div class="table-wrap">
             <table class="table" id="tblStores"><thead><tr><th>Name</th><th>City</th><th></th></tr></thead><tbody></tbody></table>
           </div>
         </div>
 
+        <!-- Assignments -->
         <div id="panelAssignments" class="card hidden">
-          <div class="section-title"><h3>Assignments</h3><button class="btn small" type="button" onclick="App.admin.openAssignment()">New assignment</button></div>
+          <div class="section-title">
+            <h3>Assignments</h3>
+            <div class="row" style="gap:8px">
+              <input id="imp_assignments" type="file" accept=".csv" class="hidden" />
+              <button class="btn small" type="button" onclick="document.getElementById('imp_assignments').click()">Import CSV</button>
+              <button class="btn small" type="button" onclick="App.admin.exportCSV('assignments')">Export CSV</button>
+              <button class="btn ok small" type="button" onclick="App.admin.openAssignment()">New assignment</button>
+            </div>
+          </div>
           <div class="table-wrap">
             <table class="table" id="tblAssign"><thead><tr><th>Shopper</th><th>Store</th><th>Form</th><th>Window</th><th>Status</th><th></th></tr></thead><tbody></tbody></table>
           </div>
         </div>
 
+        <!-- Submissions -->
         <div id="panelSubmissions" class="card hidden">
-          <div class="section-title"><h3>Submissions</h3><div class="row" style="gap:8px"><button class="btn small" type="button" onclick="App.admin.exportCSV?.()">Export CSV</button></div></div>
+          <div class="section-title">
+            <h3>Submissions</h3>
+            <div class="row" style="gap:8px">
+              <input id="imp_submissions" type="file" accept=".csv" class="hidden" />
+              <button class="btn small" type="button" onclick="document.getElementById('imp_submissions').click()">Import CSV</button>
+              <button class="btn small" type="button" onclick="App.admin.exportCSV('submissions')">Export CSV</button>
+            </div>
+          </div>
           <div class="table-wrap">
             <table class="table" id="tblSubm"><thead><tr><th>Visit</th><th>Shopper</th><th>Duration</th><th>Status</th><th></th></tr></thead><tbody></tbody></table>
           </div>
@@ -325,6 +357,49 @@ select:focus, select:active{ background:#fff; color:#111 } option{ color:#111; b
   </div>
 </div>
 
+<!-- NEW / EDIT MODALS -->
+<div id="modalUser" class="modal"><div class="modal-card">
+  <div class="section-title"><h3 id="muTitle">New Shopper</h3><div class="row" style="gap:8px"><button class="btn ok small" onclick="App.admin.saveUser()">Save</button><button class="btn small" onclick="App.ui.closeModal('modalUser')">Close</button></div></div>
+  <div class="row"><div><label>Name</label><input id="muName" class="input"></div><div><label>Email</label><input id="muEmail" class="input"></div></div>
+  <div class="row"><div><label>Password</label><input id="muPass" type="password" class="input"></div><div><label>Role</label><select id="muRole" class="input"><option>Shopper</option><option>Admin</option></select></div></div>
+  <div class="row"><div><label>Status</label><select id="muStatus" class="input"><option>pending</option><option>active</option><option>disabled</option></select></div><div></div></div>
+</div></div>
+
+<div id="modalStore" class="modal"><div class="modal-card">
+  <div class="section-title"><h3 id="msTitle">New Store</h3><div class="row" style="gap:8px"><button class="btn ok small" onclick="App.admin.saveStore()">Save</button><button class="btn small" onclick="App.ui.closeModal('modalStore')">Close</button></div></div>
+  <input type="hidden" id="msId"/>
+  <div class="row"><div><label>Name</label><input id="msName" class="input"></div><div><label>City</label><input id="msCity" class="input"></div></div>
+  <div class="row"><div><label>Address</label><input id="msAddress" class="input"></div><div><label>Notes</label><input id="msNotes" class="input"></div></div>
+</div></div>
+
+<div id="modalAssign" class="modal"><div class="modal-card">
+  <div class="section-title"><h3>New Assignment</h3><div class="row" style="gap:8px"><button class="btn ok small" onclick="App.admin.saveAssignment()">Save</button><button class="btn small" onclick="App.ui.closeModal('modalAssign')">Close</button></div></div>
+  <div class="row"><div><label>Shopper</label><select id="maShopper" class="input"></select></div><div><label>Store</label><select id="maStore" class="input"></select></div></div>
+  <div class="row"><div><label>Form</label><select id="maForm" class="input"></select></div><div><label>Status</label><select id="maStatus" class="input"><option>assigned</option><option>draft</option></select></div></div>
+  <div class="row"><div><label>Window from</label><input id="maFrom" type="datetime-local" class="input"></div><div><label>Window to</label><input id="maTo" type="datetime-local" class="input"></div></div>
+</div></div>
+
+<!-- FORM BUILDER MODAL -->
+<div id="formBuilderModal" class="modal">
+  <div class="modal-card">
+    <div class="section-title">
+      <h3 id="fbHeading">Form Builder</h3>
+      <div class="row" style="gap:8px">
+        <button class="btn small" onclick="App.admin.addSection()">Add section</button>
+        <button class="btn small" onclick="App.admin.addFieldUI()">Add field</button>
+        <button class="btn ok small" onclick="App.admin.saveForm()">Save</button>
+        <button class="btn small" onclick="App.ui.closeModal('formBuilderModal')">Close</button>
+      </div>
+    </div>
+    <label>Form title</label>
+    <input id="fbTitle" class="input" placeholder="e.g., Retail Visit v1" />
+    <hr class="sep" />
+    <div id="fbSections"></div>
+    <hr class="sep" />
+    <div id="fbFields"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -342,6 +417,11 @@ const API = {
     if(!r.ok||j.ok===false) throw new Error(j.error||('HTTP '+r.status));
     return j;
   },
+  async callText(q){ // for CSV export
+    const r=await fetch(this.base+'?q='+encodeURIComponent(q), {headers:{ ...(this.token?{'Authorization':'Bearer '+this.token}:{}) }});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.text();
+  },
   setToken(t){ this.token=t; localStorage.setItem('ms_token',t); },
   clearToken(){ this.token=null; localStorage.removeItem('ms_token'); }
 };
@@ -352,7 +432,8 @@ const U = {
   fmtDT(ts){ if(!ts) return ''; const n=parseInt(ts,10); return isNaN(n)?'':new Date(n).toLocaleString(); },
   pad:n=>(n<10?'0':'')+n,
   fmtDuration(sec){ sec=Math.max(0,Math.floor(sec||0)); const m=Math.floor(sec/60), s=sec%60; return U.pad(m)+':'+U.pad(s) },
-  toast(msg,ms=2000){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',ms) }
+  toast(msg,ms=2200){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',ms) },
+  download(name, text, mime='text/csv;charset=utf-8'){ const blob=new Blob([text],{type:mime}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},0); }
 };
 
 /* ============== App ============== */
@@ -362,6 +443,7 @@ const App = {
 
   async init(){
     this.bindUI();
+    this.bindCSVInputs();
     await this.tryBootstrap();
   },
   async tryBootstrap(){
@@ -372,17 +454,16 @@ const App = {
       this.admin.loadAll();
       this.refreshTasks();
     }catch(e){
-      this.ui.updateAuthTabs(); // guest
-      this.ui.showAuth(true);   // show login if token invalid
+      this.ui.updateAuthTabs(); 
+      this.ui.showAuth(true);
     }
   },
   ingest(boot){
     this.state.me=boot.me; this.ui.updateAuthTabs(); this.ui.setRole(this.state.me?.role||'Guest');
     this.cache={ users:boot.users||[], stores:boot.stores||[], forms:boot.forms||[], assignments:boot.assignments||[], submissions:boot.submissions||[] };
-    // admin menu visible only for admins
     document.getElementById('adminNav').classList.toggle('hidden', !(this.state.me && this.state.me.role==='Admin'));
+    this.admin.renderFormsList();
   },
-
   async softRefresh(){
     try{
       const boot=await API.call('bootstrap','GET');
@@ -412,6 +493,10 @@ const App = {
     $('#tabProfile').onclick = ()=>this.profile.open();
     $('#tabLogout').onclick  = ()=>this.auth.logout();
   },
+  bindCSVInputs(){
+    const attach=(id,table)=>{ const inp=document.getElementById(id); if(!inp) return; inp.onchange=async e=>{ const f=e.target.files[0]; if(!f) return; const txt=await f.text(); try{ await API.call('csv/import','POST',{table,csv:txt}); U.toast('Imported: '+table); await App.softRefresh(); }catch(err){ U.toast(err.message) } finally{ inp.value=''; } }; };
+    attach('imp_users','users'); attach('imp_forms','forms'); attach('imp_stores','stores'); attach('imp_assignments','assignments'); attach('imp_submissions','submissions');
+  },
 
   ui:{
     showView(which){
@@ -421,14 +506,12 @@ const App = {
       s('viewAdmin').classList.toggle('hidden', which!=='admin');
       document.getElementById('tabShopper').classList.toggle('active', which==='shopper');
       document.getElementById('tabAdmin').classList.toggle('active', which==='admin');
-      // Admin-nav visible only on admin view + admin role
       const showAdminNav = (which==='admin') && (App.state.me && App.state.me.role==='Admin');
       document.getElementById('adminNav').classList.toggle('hidden', !showAdminNav);
     },
     setRole(r){
       App.state.role=r||'Guest';
-      const b=document.getElementById('roleBadge');
-      b.textContent=r||'Guest';
+      const b=document.getElementById('roleBadge'); b.textContent=r||'Guest';
     },
     updateAuthTabs(){
       const me=App.state.me;
@@ -595,7 +678,7 @@ const App = {
         document.getElementById('timerDigits').textContent=U.fmtDuration(secs);
         document.getElementById('timerMeta').textContent='Started at '+U.fmtDT(App.state.timer.start);
       },250);
-      await App.softRefresh(); // refresh after start
+      await App.softRefresh();
     },
     async stop(){
       const s=App.state.curSubmission; if(!s||!App.state.timer.running) return;
@@ -618,38 +701,39 @@ const App = {
     selectedPanel:'shoppers',
     switchPanel(which){
       this.selectedPanel=which;
-      // active pills
       ['Shoppers','Forms','Stores','Assignments','Submissions'].forEach(k=>{
         document.getElementById('nav'+k).classList.toggle('active', k.toLowerCase()===which);
       });
-      // show panels
-      const map={
-        shoppers:'panelShoppers',
-        forms:'panelForms',
-        stores:'panelStores',
-        assignments:'panelAssignments',
-        submissions:'panelSubmissions'
-      };
+      const map={shoppers:'panelShoppers',forms:'panelForms',stores:'panelStores',assignments:'panelAssignments',submissions:'panelSubmissions'};
       Object.values(map).forEach(id=>document.getElementById(id).classList.add('hidden'));
       document.getElementById(map[which]).classList.remove('hidden');
-
-      // small UX: dacă intrăm pe Forms fără să fie selectat, deschidem builder-ul pe primul form
-      if(which==='forms'){ App.admin.openFormBuilder(App.cache.forms[0]?.id||null); }
+      if(which==='forms'){ this.renderFormsList(); }
+      this.loadAll();
     },
 
+    /* CSV handlers */
+    async exportCSV(table){
+      try{
+        const csv=await API.callText('csv/export&table='+encodeURIComponent(table));
+        U.download(table+'-'+new Date().toISOString().slice(0,10)+'.csv', csv);
+      }catch(e){ U.toast(e.message); }
+    },
+
+    /* LOAD tables */
     loadAll(){
       // shoppers
       const ts=document.querySelector('#tblShoppers tbody'); if(ts){ ts.innerHTML='';
         (App.cache.users||[]).forEach(u=>{
           const info=document.createElement('tr');
-          info.innerHTML=`<td>${u.name}</td><td>${u.email}</td><td>${u.status} <span class="pill-inline">${u.role}</span></td><td></td>`;
+          info.innerHTML=`<td>${u.name}</td><td>${u.email}</td><td>${u.status} <span class="pill-inline">${u.role}</span></td>
+            <td><button class="btn small" onclick="App.admin.editUser('${u.id}')">Edit</button>
+                <button class="btn danger small" onclick="App.admin.deleteUser('${u.id}')">Delete</button></td>`;
           ts.appendChild(info);
           const actions=document.createElement('tr'); actions.className='user-actions';
           actions.innerHTML=`<td colspan="4"><div class="actions">
               <button type="button" class="btn small" onclick="event.stopPropagation(); App.admin.userSetStatus('${u.id}','active')">Activate</button>
               <button type="button" class="btn small" onclick="event.stopPropagation(); App.admin.userSetStatus('${u.id}','pending')">Pending</button>
               <button type="button" class="btn small" onclick="event.stopPropagation(); App.admin.userSetStatus('${u.id}','disabled')">Disable</button>
-              <button type="button" class="btn danger small" onclick="event.stopPropagation(); App.admin.deleteUser('${u.id}')">Delete</button>
             </div><div class="divider"></div></td>`;
           ts.appendChild(actions);
         });
@@ -659,8 +743,8 @@ const App = {
         (App.cache.stores||[]).forEach(s=>{
           const tr=document.createElement('tr');
           tr.innerHTML=`<td>${s.name}</td><td>${s.city||''}</td>
-            <td><button type="button" class="btn small" onclick="event.stopPropagation(); App.admin.editStore('${s.id}')">Edit</button>
-                <button type="button" class="btn danger small" onclick="event.stopPropagation(); App.admin.deleteStore('${s.id}')">Delete</button></td>`;
+            <td><button class="btn small" onclick="App.admin.editStore('${s.id}')">Edit</button>
+                <button class="btn danger small" onclick="App.admin.deleteStore('${s.id}')">Delete</button></td>`;
           tstore.appendChild(tr);
         });
       }
@@ -699,9 +783,114 @@ const App = {
           tsu.appendChild(tr);
         });
       }
+      // update Forms table too
+      App.admin.renderFormsList();
     },
 
-    /* ---- FORM BUILDER ---- */
+    /* ===== USERS ===== */
+    openNewShopper(){ // create
+      const m=document.getElementById('modalUser'); m.dataset.id='';
+      document.getElementById('muTitle').textContent='New Shopper';
+      document.getElementById('muName').value='';
+      document.getElementById('muEmail').value='';
+      document.getElementById('muPass').value='';
+      document.getElementById('muRole').value='Shopper';
+      document.getElementById('muStatus').value='pending';
+      App.ui.openModal('modalUser');
+    },
+    editUser(id){
+      const u=App.cache.users.find(x=>x.id===id); if(!u) return;
+      const m=document.getElementById('modalUser'); m.dataset.id=id;
+      document.getElementById('muTitle').textContent='Edit User';
+      document.getElementById('muName').value=u.name||'';
+      document.getElementById('muEmail').value=u.email||'';
+      document.getElementById('muPass').value='';
+      document.getElementById('muRole').value=u.role||'Shopper';
+      document.getElementById('muStatus').value=u.status||'active';
+      App.ui.openModal('modalUser');
+    },
+    async saveUser(){
+      const m=document.getElementById('modalUser'); const id=m.dataset.id||null;
+      const name=document.getElementById('muName').value.trim();
+      const email=document.getElementById('muEmail').value.trim();
+      const pass=document.getElementById('muPass').value;
+      const role=document.getElementById('muRole').value;
+      const status=document.getElementById('muStatus').value;
+      if(!name||!email||(!id && !pass)) return U.toast('Fill required fields');
+      try{
+        if(id) await API.call('users/update','PATCH',{id,name,email,role,status, ...(pass?{pass}:{} )});
+        else   await API.call('users/create','POST',{name,email,pass,role,status});
+        App.ui.closeModal('modalUser'); await App.softRefresh(); U.toast('User saved');
+      }catch(e){ U.toast(e.message); }
+    },
+    async userSetStatus(id,status){ await API.call('users/update','PATCH',{id,status}); await App.softRefresh(); U.toast('User '+status) },
+    async deleteUser(id){ if(!confirm('Delete user?')) return; await API.call('users/delete','DELETE',{id}); await App.softRefresh(); U.toast('User deleted') },
+
+    /* ===== STORES ===== */
+    openNewStore(){ document.getElementById('msTitle').textContent='New Store';
+      document.getElementById('msId').value=''; document.getElementById('msName').value=''; document.getElementById('msCity').value=''; document.getElementById('msAddress').value=''; document.getElementById('msNotes').value='';
+      App.ui.openModal('modalStore'); },
+    editStore(id){ const s=App.cache.stores.find(x=>x.id===id); if(!s) return;
+      document.getElementById('msTitle').textContent='Edit Store';
+      document.getElementById('msId').value=s.id; document.getElementById('msName').value=s.name||''; document.getElementById('msCity').value=s.city||''; document.getElementById('msAddress').value=s.address||''; document.getElementById('msNotes').value=s.notes||''; App.ui.openModal('modalStore'); },
+    async saveStore(){ const id=document.getElementById('msId').value||null; const name=document.getElementById('msName').value.trim(); if(!name) return U.toast('Name required');
+      const city=document.getElementById('msCity').value.trim(), address=document.getElementById('msAddress').value.trim(), notes=document.getElementById('msNotes').value.trim();
+      try{
+        if(id) await API.call('stores/update','PATCH',{id,name,city,address,notes});
+        else   await API.call('stores/create','POST',{name,city,address,notes});
+        App.ui.closeModal('modalStore'); await App.softRefresh(); U.toast('Store saved');
+      }catch(e){ U.toast(e.message); } },
+    async deleteStore(id){ if(!confirm('Delete store?')) return; await API.call('stores/delete','DELETE',{id}); await App.softRefresh(); U.toast('Store deleted') },
+
+    /* ===== ASSIGNMENTS ===== */
+    openAssignment(id=null){
+      const m=document.getElementById('modalAssign'); m.dataset.id=id||'';
+      // fill selects
+      const sel=(el,opts,val)=>{ el.innerHTML=opts.map(o=>`<option value="${o.value}">${o.label}</option>`).join(''); if(val!=null) el.value=val; };
+      sel(document.getElementById('maShopper'), (App.cache.users||[]).filter(u=>u.status==='active').map(u=>({value:u.id,label:`${u.name} (${u.email})`})));
+      sel(document.getElementById('maStore'), (App.cache.stores||[]).map(s=>({value:s.id,label:s.name})));
+      sel(document.getElementById('maForm'),  (App.cache.forms||[]).map(f=>({value:f.id,label:f.title})));
+      document.getElementById('maStatus').value='assigned';
+      document.getElementById('maFrom').value=''; document.getElementById('maTo').value='';
+      if(id){ const a=App.cache.assignments.find(x=>x.id===id); if(a){
+        document.getElementById('maShopper').value=a.shopper_id||''; document.getElementById('maStore').value=a.store_id||''; document.getElementById('maForm').value=a.form_id||'';
+        document.getElementById('maStatus').value=a.status||'assigned';
+        if(a.window_from) document.getElementById('maFrom').value=new Date(a.window_from).toISOString().slice(0,16);
+        if(a.window_to)   document.getElementById('maTo').value=new Date(a.window_to).toISOString().slice(0,16);
+      }}
+      App.ui.openModal('modalAssign');
+    },
+    async saveAssignment(){
+      const m=document.getElementById('modalAssign'); const id=m.dataset.id||null;
+      const shopperId=document.getElementById('maShopper').value, storeId=document.getElementById('maStore').value, formId=document.getElementById('maForm').value;
+      const status=document.getElementById('maStatus').value;
+      const from=document.getElementById('maFrom').value, to=document.getElementById('maTo').value;
+      if(!shopperId||!storeId||!formId) return U.toast('Complete all fields');
+      const payload={ id, shopperId, storeId, formId, status, windowFrom: from?new Date(from).getTime():null, windowTo: to?new Date(to).getTime():null };
+      try{
+        await API.call('assignments/upsert','POST', payload);
+        App.ui.closeModal('modalAssign'); await App.softRefresh(); U.toast('Assignment saved');
+      }catch(e){ U.toast(e.message); }
+    },
+    async deleteAssignment(id){ if(!confirm('Delete assignment?')) return; await API.call('assignments/delete','DELETE',{id}); await App.softRefresh(); U.toast('Assignment deleted') },
+
+    /* ===== FORMS LIST ===== */
+    renderFormsList(){
+      const tb=document.querySelector('#tblForms tbody'); if(!tb) return; tb.innerHTML='';
+      (App.cache.forms||[]).forEach(f=>{
+        const secCount=(f.sections||[]).length||0; const fldCount=(f.fields||[]).length||0;
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${f.title}</td><td>${secCount}</td><td>${fldCount}</td>
+        <td>
+          <button class="btn small" onclick="App.admin.openFormBuilder('${f.id}')">Edit</button>
+          <button class="btn danger small" onclick="App.admin.deleteForm('${f.id}')">Delete</button>
+        </td>`;
+        tb.appendChild(tr);
+      });
+    },
+    async deleteForm(id){ if(!confirm('Delete form?')) return; await API.call('forms/delete','DELETE',{id}); await App.softRefresh(); U.toast('Form deleted') },
+
+    /* ===== FORM BUILDER ===== */
     _editingFormId:null, _fbForm:{id:null,title:'',sections:[],fields:[]},
 
     openFormBuilder(id=null){
@@ -715,8 +904,10 @@ const App = {
       }else{
         this._fbForm={ id:null, title:'', sections:[{id:U.uid(),title:'General',ord:0,fields:[]}], fields:[] };
       }
+      document.getElementById('fbHeading').textContent = id?'Edit Form':'New Form';
       document.getElementById('fbTitle').value=this._fbForm.title||'';
       this.renderFBSections(); this.renderFBFields();
+      App.ui.openModal('formBuilderModal');
     },
     renderFBSections(){
       const host=document.getElementById('fbSections'); host.innerHTML='';
@@ -792,24 +983,14 @@ const App = {
       const f=this._fbForm; f.sections.forEach((s,idx)=>s.ord=idx);
       const payload={ id:f.id||null, title, sections:f.sections.map(s=>({id:s.id,title:s.title,ord:s.ord})),
         fields:f.fields.map((fd,idx)=>({id:fd.id,label:fd.label,type:fd.type,required:!!fd.required,options:fd.options||[],sectionId:fd.sectionId||f.sections[0].id,ord:idx})) };
-      await API.call('forms/save','POST',payload); await App.softRefresh(); U.toast('Form saved');
+      await API.call('forms/save','POST',payload); await App.softRefresh(); App.ui.closeModal('formBuilderModal'); U.toast('Form saved');
     },
 
-    /* CRUD scurt (placeholder pt. modale dedicate) */
-    openNewShopper(){ U.toast('Add shopper modal not included in short build') },
-    async userSetStatus(id,status){ await API.call('users/update','PATCH',{id,status}); await App.softRefresh(); U.toast('User '+status) },
-    async deleteUser(id){ await API.call('users/delete','DELETE',{id}); await App.softRefresh(); U.toast('User deleted') },
-
-    openNewStore(){ U.toast('New store modal not included in short build') },
-    editStore(_){ U.toast('Edit store modal not included in short build') },
-    async deleteStore(id){ await API.call('stores/delete','DELETE',{id}); await App.softRefresh(); U.toast('Store deleted') },
-
-    openAssignment(){ U.toast('Assignment modal not included in short build') },
-    async deleteAssignment(id){ await API.call('assignments/delete','DELETE',{id}); await App.softRefresh(); U.toast('Assignment deleted') },
-
+    /* ===== SUBMISSIONS ACTIONS ===== */
     async markSubmission(id,state){ await API.call('submissions/mark','PATCH',{id,status:state}); await App.softRefresh(); U.toast('Submission '+state) },
-    async deleteSubmission(id){ await API.call('submissions/delete','DELETE',{id}); await App.softRefresh(); U.toast('Submission deleted') },
+    async deleteSubmission(id){ if(!confirm('Delete submission?')) return; await API.call('submissions/delete','DELETE',{id}); await App.softRefresh(); U.toast('Submission deleted') },
 
+    /* printable view */
     viewSubmission(id){
       const s=App.cache.submissions.find(x=>x.id===id); if(!s) return U.toast('Missing');
       const st=App.cache.stores.find(o=>o.id===s.store_id)||{}; const f=App.cache.forms.find(o=>o.id===s.form_id)||{fields:[],title:'Form'}; const sh=App.cache.users.find(o=>o.id===s.shopper_id)||{};
@@ -831,7 +1012,10 @@ const App = {
 <div class="content"><table>${rows}</table></div>
 <div class="foot">Stored in MySQL (live API).</div></div></div>
 <script>(function(){})();<\/script></body></html>`); doc.document.close();
-    }
+    },
+
+    /* ===== MISC ===== */
+    async factoryReset(){ if(!confirm('Erase ALL data?')) return; await API.call('factory/reset','POST'); await App.softRefresh(); U.toast('Factory reset complete') }
   }
 };
 
