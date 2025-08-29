@@ -767,6 +767,7 @@ const App = {
           ta.appendChild(tr);
         });
       }
+
       // submissions
       const tsu=document.querySelector('#tblSubm tbody'); if(tsu){ tsu.innerHTML='';
         (App.cache.submissions||[]).forEach(s=>{
@@ -860,18 +861,55 @@ const App = {
       }}
       App.ui.openModal('modalAssign');
     },
-    async saveAssignment(){
-      const m=document.getElementById('modalAssign'); const id=m.dataset.id||null;
-      const shopperId=document.getElementById('maShopper').value, storeId=document.getElementById('maStore').value, formId=document.getElementById('maForm').value;
-      const status=document.getElementById('maStatus').value;
-      const from=document.getElementById('maFrom').value, to=document.getElementById('maTo').value;
-      if(!shopperId||!storeId||!formId) return U.toast('Complete all fields');
-      const payload={ id, shopperId, storeId, formId, status, windowFrom: from?new Date(from).getTime():null, windowTo: to?new Date(to).getTime():null };
-      try{
-        await API.call('assignments/upsert','POST', payload);
-        App.ui.closeModal('modalAssign'); await App.softRefresh(); U.toast('Assignment saved');
-      }catch(e){ U.toast(e.message); }
-    },
+	async saveAssignment(){
+	  const m=document.getElementById('modalAssign'); const id=m.dataset.id||null;
+	  const shopperId=document.getElementById('maShopper').value;
+	  const storeId  =document.getElementById('maStore').value;
+	  const formId   =document.getElementById('maForm').value;
+	  const status   =document.getElementById('maStatus').value;
+	  const fromRaw  =document.getElementById('maFrom').value;
+	  const toRaw    =document.getElementById('maTo').value;
+
+	  if(!shopperId||!storeId||!formId) return U.toast('Complete all fields');
+
+	  const windowFrom = fromRaw ? new Date(fromRaw).getTime() : null;
+	  const windowTo   = toRaw   ? new Date(toRaw).getTime()   : null;
+
+	  // payload cu sinonime (ca să meargă indiferent cum e implementată ruta pe server)
+	  const payload = {
+		id, status,
+		shopperId, storeId, formId, windowFrom, windowTo,
+		// snake_case aliases (în caz că backendul le așteaptă așa)
+		shopper_id: shopperId, store_id: storeId, form_id: formId,
+		window_from: windowFrom, window_to: windowTo
+	  };
+
+	  // încercăm mai multe rute posibile până prinde una
+	  const candidates = [
+		'assignments/upsert',
+		'assignments/save',
+		'assignment/upsert',
+		'assignment/save',
+		'assignments/create'
+	  ];
+
+	  let lastErr=null, success=false;
+	  for(const route of candidates){
+		try{
+		  await API.call(route, 'POST', payload);
+		  success=true; break;
+		}catch(e){
+		  lastErr=e;
+		  // dacă e altă eroare decât "Unknown route" / 404, nu mai încercăm
+		  if(!/Unknown route|HTTP 404/i.test(e.message)){ throw e; }
+		}
+	  }
+	  if(!success){ throw lastErr; }
+
+	  App.ui.closeModal('modalAssign');
+	  await App.softRefresh();
+	  U.toast('Assignment saved');
+	},
     async deleteAssignment(id){ if(!confirm('Delete assignment?')) return; await API.call('assignments/delete','DELETE',{id}); await App.softRefresh(); U.toast('Assignment deleted') },
 
     /* ===== FORMS LIST ===== */
